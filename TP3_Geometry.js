@@ -17,7 +17,38 @@ class Node {
 TP3.Geometry = {
 
 	simplifySkeleton: function (rootNode, rotationThreshold = 0.0001) {
-		//TODO
+		let children = rootNode.childNodes;
+		if (children.length == 0) {
+			return rootNode;
+		}
+		if (children.length == 1) {
+			let child = children[0];
+			let angleParent = Math.atan2(rootNode.p1.x - rootNode.p0.x, rootNode.p1.y - rootNode.p0.y)
+			let angleChild = Math.atan2(child.p1.x - child.p0.x, child.p1.y - child.p0.y);
+			let angle = angleChild + angleParent;
+			if (angle < this.rotationThreshold) {
+				rootNode.childNode = child.childNode;
+				rootNode.p1 = child.p1;
+				rootNode.a1 = child.a1;
+				rootNode.removeChild(child);
+				simplifySkeleton(rootNode, rotationThreshold);
+				return rootNode;
+			}
+			else {
+				simplifySkeleton(child, rotationThreshold);
+				return child
+			}
+		}
+		else {
+			for (i in children.length) {
+				simplifySkeleton(children[i], rotationThreshold);
+			}
+			
+		}
+		
+
+			
+		
 	},
 
 	generateSegmentsHermite: function (rootNode, lengthDivisions = 4, radialDivisions = 8) {
