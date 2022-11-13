@@ -17,7 +17,46 @@ class Node {
 TP3.Geometry = {
 
 	simplifySkeleton: function (rootNode, rotationThreshold = 0.0001) {
-		//TODO
+		let numberOfChild = rootNode.childNode.length;
+
+
+		if (numberOfChild == 1 && rootNode.parentNode != null) {
+			let vectorChild = new THREE.Vector3()
+			vectorChild.subVectors(rootNode.p1, rootNode.p0);
+			let vectorParent = new THREE.Vector3()
+			vectorParent.subVectors(rootNode.parentNode.p1, rootNode.parentNode.p0);
+
+			let angleParentX = Math.atan2(vectorParent.y, vectorParent.x)
+			let angleChildX = Math.atan2(vectorChild.y, vectorChild.x)
+
+			let angleParentY = Math.atan2(vectorParent.z, vectorParent.y)
+			let angleChildY = Math.atan2(vectorChild.z, vectorChild.y)
+
+			// console.log(angleParentX,angleChildX,angleParentY,angleChildY)
+			if (Math.abs(vectorChild.angleTo(vectorParent) < rotationThreshold)) {
+			//if (Math.abs(angleParentX - angleChildX) < rotationThreshold && Math.abs(angleParentY - angleChildY) < rotationThreshold) {
+				rootNode.p1 = rootNode.childNode[0].p1
+				rootNode.a1 = rootNode.childNode[0].a1
+				rootNode.childNode = rootNode.childNode[0].childNode
+				rootNode.childNode.forEach(node => {
+					node.parentNode = rootNode;
+				});
+
+				this.simplifySkeleton(rootNode, rotationThreshold);
+				return rootNode
+			}
+
+		}
+
+		if (numberOfChild >= 1) {
+			{
+				rootNode.childNode.forEach(node => {
+					this.simplifySkeleton(node, rotationThreshold);
+				});
+			}
+		}
+
+		return rootNode
 	},
 
 	generateSegmentsHermite: function (rootNode, lengthDivisions = 4, radialDivisions = 8) {
