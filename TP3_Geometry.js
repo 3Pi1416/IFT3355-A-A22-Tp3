@@ -26,15 +26,7 @@ TP3.Geometry = {
 			let vectorParent = new THREE.Vector3()
 			vectorParent.subVectors(rootNode.parentNode.p1, rootNode.parentNode.p0);
 
-			let angleParentX = Math.atan2(vectorParent.y, vectorParent.x)
-			let angleChildX = Math.atan2(vectorChild.y, vectorChild.x)
-
-			let angleParentY = Math.atan2(vectorParent.z, vectorParent.y)
-			let angleChildY = Math.atan2(vectorChild.z, vectorChild.y)
-
-			// console.log(angleParentX,angleChildX,angleParentY,angleChildY)
 			if (Math.abs(vectorChild.angleTo(vectorParent) < rotationThreshold)) {
-			//if (Math.abs(angleParentX - angleChildX) < rotationThreshold && Math.abs(angleParentY - angleChildY) < rotationThreshold) {
 				rootNode.p1 = rootNode.childNode[0].p1
 				rootNode.a1 = rootNode.childNode[0].a1
 				rootNode.childNode = rootNode.childNode[0].childNode
