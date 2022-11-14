@@ -1,6 +1,37 @@
 TP3.Render = {
 	drawTreeRough: function (rootNode, scene, alpha, radialDivisions = 8, leavesCutoff = 0.1, leavesDensity = 10, applesProbability = 0.05, matrix = new THREE.Matrix4()) {
-		//TODO
+
+		if (rootNode.childNode.lenght == 0) {
+
+		} else {
+			const distanceBranch = rootNode.p1.distanceTo(rootNode.p0);
+			let cylinder = new THREE.CylinderGeometry(rootNode.a1, rootNode.a0, distanceBranch, 32);
+
+			let branch = new THREE.Mesh(cylinder, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
+
+
+			let vectorBranch = new THREE.Vector3()
+			vectorBranch.subVectors(rootNode.p1, rootNode.p0);
+
+			let angleBranchX = Math.asin(vectorBranch.x, vectorBranch.length());
+			let angleBranchY = Math.asin(vectorBranch.y, vectorBranch.length());
+			let angleBranchZ = Math.asin(vectorBranch.z, vectorBranch.length());
+			matrix.rotateX(angleBranchX)
+			matrix.rotateY(angleBranchY)
+			matrix.rotateZ(angleBranchZ)
+
+			branch.rotateX(angleBranchX)
+			branch.rotateY(angleBranchY)
+			branch.rotateZ(angleBranchZ)
+
+			branch.position.copy(rootNode.p0)
+			// branch.setMatrix(matrix)
+			scene.add(branch);
+			rootNode.childNode.forEach(child => {
+				this.drawTreeRough(child, scene, alpha, radialDivisions, leavesCutoff, leavesDensity, applesProbability, matrix);
+			});
+		}
+		return
 	},
 
 	drawTreeHermite: function (rootNode, scene, alpha, leavesCutoff = 0.1, leavesDensity = 10, applesProbability = 0.05, matrix = new THREE.Matrix4()) {
