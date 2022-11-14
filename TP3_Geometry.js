@@ -20,19 +20,20 @@ TP3.Geometry = {
 		let numberOfChild = rootNode.childNode.length;
 
 
-		if (numberOfChild == 1 && rootNode.parentNode != null) {
+		if (numberOfChild == 1 && rootNode.childNode[0] != null) {
 			let vectorChild = new THREE.Vector3()
-			vectorChild.subVectors(rootNode.p1, rootNode.p0);
+			vectorChild.subVectors(rootNode.childNode[0].p1, rootNode.childNode[0].p0);
 			let vectorParent = new THREE.Vector3()
-			vectorParent.subVectors(rootNode.parentNode.p1, rootNode.parentNode.p0);
+			vectorParent.subVectors(rootNode.p1, rootNode.p0);
 
 			if (Math.abs(vectorChild.angleTo(vectorParent) < rotationThreshold)) {
 				rootNode.p1 = rootNode.childNode[0].p1
 				rootNode.a1 = rootNode.childNode[0].a1
 				rootNode.childNode = rootNode.childNode[0].childNode
-				rootNode.childNode.forEach(node => {
-					node.parentNode = rootNode;
+				rootNode.childNode.forEach(child => {
+					child.parentNode = rootNode;
 				});
+
 
 				this.simplifySkeleton(rootNode, rotationThreshold);
 				return rootNode
