@@ -31,6 +31,9 @@ TP3.Geometry = {
 				rootNode.p1 = child.p1;
 				rootNode.a1 = child.a1;
 				rootNode.childNode = child.childNode;
+				if (rootNode.sections != null && child.sections != null)
+					rootNode.sections.join(child.sections);
+					
 				rootNode.childNode.forEach(child => {
 					child.parentNode = rootNode;
 				});
