@@ -21,15 +21,16 @@ TP3.Geometry = {
 
 
 		if (numberOfChild == 1 && rootNode.childNode[0] != null) {
+			let child = rootNode.childNode[0];
 			let vectorChild = new THREE.Vector3()
-			vectorChild.subVectors(rootNode.childNode[0].p1, rootNode.childNode[0].p0);
+			vectorChild.subVectors(child.p1, child.p0);
 			let vectorParent = new THREE.Vector3()
 			vectorParent.subVectors(rootNode.p1, rootNode.p0);
 
 			if (Math.abs(vectorChild.angleTo(vectorParent) < rotationThreshold)) {
-				rootNode.p1 = rootNode.childNode[0].p1
-				rootNode.a1 = rootNode.childNode[0].a1
-				rootNode.childNode = rootNode.childNode[0].childNode
+				rootNode.p1 = child.p1;
+				rootNode.a1 = child.a1;
+				rootNode.childNode = child.childNode;
 				rootNode.childNode.forEach(child => {
 					child.parentNode = rootNode;
 				});
