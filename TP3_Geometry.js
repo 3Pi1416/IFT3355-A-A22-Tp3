@@ -37,8 +37,6 @@ TP3.Geometry = {
 				rootNode.childNode.forEach(child => {
 					child.parentNode = rootNode;
 				});
-
-
 				this.simplifySkeleton(rootNode, rotationThreshold);
 				return rootNode
 			}

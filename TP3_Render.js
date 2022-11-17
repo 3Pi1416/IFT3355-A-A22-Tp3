@@ -1,31 +1,43 @@
 TP3.Render = {
 	drawTreeRough: function (rootNode, scene, alpha, radialDivisions = 8, leavesCutoff = 0.1, leavesDensity = 10, applesProbability = 0.05, matrix = new THREE.Matrix4()) {
 
-		if (rootNode.childNode.lenght == 0) {
 
+		if (rootNode.childNode.length == 0) {
+			// si feuille
 		} else {
+
 			const distanceBranch = rootNode.p1.distanceTo(rootNode.p0);
 			let cylinder = new THREE.CylinderGeometry(rootNode.a1, rootNode.a0, distanceBranch, 32);
-
 			let branch = new THREE.Mesh(cylinder, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
+			let matrix2 = new THREE.Matrix4()
 
 
 			let vectorBranch = new THREE.Vector3()
 			vectorBranch.subVectors(rootNode.p1, rootNode.p0);
+			matrix2.makeTranslation(vectorBranch.x / 2, vectorBranch.y / 2, vectorBranch.z / 2)
+			let matriceRotation = new THREE.Matrix4();
 
-			let angleBranchX = Math.asin(vectorBranch.x, vectorBranch.length());
-			let angleBranchY = Math.asin(vectorBranch.y, vectorBranch.length());
-			let angleBranchZ = Math.asin(vectorBranch.z, vectorBranch.length());
-			matrix.rotateX(angleBranchX)
-			matrix.rotateY(angleBranchY)
-			matrix.rotateZ(angleBranchZ)
+			let rho = Math.PI / 2 - Math.asin(vectorBranch.y / distanceBranch);
+			let teta = Math.atan2(vectorBranch.x, vectorBranch.z);
 
-			branch.rotateX(angleBranchX)
-			branch.rotateY(angleBranchY)
-			branch.rotateZ(angleBranchZ)
 
-			branch.position.copy(rootNode.p0)
-			// branch.setMatrix(matrix)
+			//Lorsqu'On fait un demi tour, on regarde de l'autre côté parce que la fonciton tan ne fais pas de différence avec ou est le négatif 
+			if (vectorBranch.z < 0) {
+				rho = rho - 2 * Math.PI;
+			}
+			if (vectorBranch.x < 0) {
+				teta = teta - 2 * Math.PI;
+			}
+
+			matriceRotation.makeRotationY(teta)
+			matrix2.multiply(matriceRotation)
+			matriceRotation.makeRotationX(rho)
+			matrix2.multiply(matriceRotation)
+
+
+			let matrix3 = new THREE.Matrix4().makeTranslation(rootNode.p0.x, rootNode.p0.y, rootNode.p0.z)
+			matrix3.multiply(matrix2)
+			branch.applyMatrix4(matrix3)
 			scene.add(branch);
 			rootNode.childNode.forEach(child => {
 				this.drawTreeRough(child, scene, alpha, radialDivisions, leavesCutoff, leavesDensity, applesProbability, matrix);
