@@ -3,19 +3,18 @@ TP3.Render = {
 
 
 
-		// il y des branche enfants
-
+		//créer une branche 
 		let distanceBranch = rootNode.p1.distanceTo(rootNode.p0);
 		let cylinder = new THREE.CylinderBufferGeometry(rootNode.a1, rootNode.a0, distanceBranch, 32);
 		let branch = new THREE.Mesh(cylinder, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
-		let matrixRotationAxis = new THREE.Matrix4()
 
 
-		let vectorBranch = new THREE.Vector3()
+		// 
+		let vectorBranch = new THREE.Vector3();
 		vectorBranch.subVectors(rootNode.p1, rootNode.p0);
-		matrixRotationAxis.makeTranslation(vectorBranch.x / 2, vectorBranch.y / 2, vectorBranch.z / 2)
-		let matriceRotation = new THREE.Matrix4();
 
+
+		//calculer les angles pour la rotation des branche 
 		let rho = Math.PI / 2 - Math.asin(vectorBranch.y / distanceBranch);
 		let teta = Math.atan2(vectorBranch.x, vectorBranch.z);
 
@@ -28,15 +27,23 @@ TP3.Render = {
 			teta = teta - 2 * Math.PI;
 		}
 
-		matriceRotation.makeRotationY(teta)
-		matrixRotationAxis.multiply(matriceRotation)
-		matriceRotation.makeRotationX(rho)
-		matrixRotationAxis.multiply(matriceRotation)
+		//applqiuer la rotation a des matrice 
+		let matriceRotationTemporaire = new THREE.Matrix4();
+		let matrixRotationBase = new THREE.Matrix4();
+		matrixRotationBase.makeRotationY(teta)
+		matriceRotationTemporaire.makeRotationX(rho)
+		matrixRotationBase.multiply(matriceRotationTemporaire)
 
+		// movement pour centrer le cylindre 
+		let matrixBasicMovement = new THREE.Matrix4().copy(matrixRotationBase);
+
+		let matrixTranslation = new THREE.Matrix4();
+		matrixTranslation.makeTranslation(vectorBranch.x / 2, vectorBranch.y / 2, vectorBranch.z / 2);
+		matrixBasicMovement.multiply(matrixTranslation);
 
 		let matrixTranslationP0 = new THREE.Matrix4().makeTranslation(rootNode.p0.x, rootNode.p0.y, rootNode.p0.z)
 		let matrixTransformation = new THREE.Matrix4().copy(matrixTranslationP0)
-		matrixTransformation.multiply(matrixRotationAxis)
+		matrixTransformation.multiply(matrixBasicMovement)
 		branch.applyMatrix4(matrixTransformation)
 		scene.add(branch);
 
@@ -55,28 +62,28 @@ TP3.Render = {
 			} else {
 				//  TODO
 				// THREE.BufferGeometryUtils.mergeBufferGeometries() 
-				for (let i = 0; i < leavesDensity; i++) {
-					let square = new THREE.PlaneBufferGeometry(alpha, alpha);
-					let leaf = new THREE.Mesh(square, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
-					let randomForAngle = Math.random() * 2 * Math.PI;
-					let randomForAngle2 = Math.random();
-					let randomForPosition = Math.random() * distanceBranch;
-					let randomForDistanceFromBranch = (Math.random() - 0.5) * alpha;
-					let matrixTransformationLeaf = new THREE.Matrix4()
+				// 	// for (let i = 0; i < leavesDensity; i++) {
+				// 	let square = new THREE.PlaneBufferGeometry(alpha, alpha);
+				// 	let leaf = new THREE.Mesh(square, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
+				// 	let randomForAngle = Math.random() * 2 * Math.PI;
+				// 	let randomForAngle2 = Math.random();
+				// 	let randomForPosition = Math.random() * distanceBranch;
+				// 	let randomForDistanceFromBranch = (Math.random() - 0.5) * alpha;
+				// 	let matrixTransformationLeaf = new THREE.Matrix4()
 
-					matrixTransformationLeaf.makeTranslation(randomForDistanceFromBranch, randomForPosition + alpha / 2, 0);
-					let matrixRotationLeaf = new THREE.Matrix4();
-					matrixRotationLeaf.makeRotationX(randomForAngle2);
-					matrixTransformationLeaf.multiply(matrixRotationLeaf);
-					matrixRotationLeaf.makeRotationY(randomForAngle);
-					matrixTransformationLeaf.multiply(matrixRotationLeaf);
-					// appliquer la transformation de la branche 
-					matrixTransformationLeaf.multiply(matrixTransformation);
-					leaf.applyMatrix4(matrixTransformationLeaf);
+				// 	matrixTransformationLeaf.makeTranslation(randomForDistanceFromBranch, randomForPosition + alpha / 2, 0);
+				// 	let matrixRotationLeaf = new THREE.Matrix4();
+				// 	matrixRotationLeaf.makeRotationX(randomForAngle2);
+				// 	matrixTransformationLeaf.multiply(matrixRotationLeaf);
+				// 	matrixRotationLeaf.makeRotationY(randomForAngle);
+				// 	matrixTransformationLeaf.multiply(matrixRotationLeaf);
+				// 	// appliquer la transformation de la branche 
+				// 	matrixTransformationLeaf.multiply(matrixTransformation);
+				// 	leaf.applyMatrix4(matrixTransformationLeaf);
 
-					scene.add(leaf); // j'utilise clairement pas correctement le plane buffer 
+				// 	scene.add(leaf); // j'utilise clairement pas correctement le plane buffer 
 
-				}
+				// 	// }
 
 			}
 		}
