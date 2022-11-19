@@ -5,7 +5,7 @@ TP3.Render = {
 
 		// il y des branche enfants
 
-		const distanceBranch = rootNode.p1.distanceTo(rootNode.p0);
+		var distanceBranch = rootNode.p1.distanceTo(rootNode.p0);
 		let cylinder = new THREE.CylinderBufferGeometry(rootNode.a1, rootNode.a0, distanceBranch, 32);
 		let branch = new THREE.Mesh(cylinder, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
 		let matrixRotationAxis = new THREE.Matrix4()
@@ -66,9 +66,9 @@ TP3.Render = {
 
 					matrixTransformationLeaf.makeTranslation(randomForDistanceFromBranch, randomForPosition + alpha / 2, 0);
 					let matrixRotationLeaf = new THREE.Matrix4();
-					matrixRotationLeaf.makeRotationY(randomForAngle);
-					matrixTransformationLeaf.multiply(matrixRotationLeaf);
 					matrixRotationLeaf.makeRotationX(randomForAngle2);
+					matrixTransformationLeaf.multiply(matrixRotationLeaf);
+					matrixRotationLeaf.makeRotationY(randomForAngle);
 					matrixTransformationLeaf.multiply(matrixRotationLeaf);
 					// appliquer la transformation de la branche 
 					matrixTransformationLeaf.multiply(matrixTransformation);
