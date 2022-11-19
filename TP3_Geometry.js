@@ -33,7 +33,7 @@ TP3.Geometry = {
 				rootNode.childNode = child.childNode;
 				if (rootNode.sections != null && child.sections != null)
 					rootNode.sections.join(child.sections);
-					
+
 				rootNode.childNode.forEach(child => {
 					child.parentNode = rootNode;
 				});
@@ -59,7 +59,25 @@ TP3.Geometry = {
 	},
 
 	hermite: function (h0, h1, v0, v1, t) {
-		//TODO
+		let dp = 1;
+
+		let m = new THREE.Matrix4().set(
+			h0.x, h0.y, h0.z, 1,
+			h1.x, h1.y, h1.z, 1,
+			v0.x + 1, v0.y - 1, v0.z, 1,
+			v1.x - 1, v1.y + 1, v1.z + 2, 1
+		);
+
+		let matriceTempsInverse = new THREE.Matrix4().set(
+			2, -2, 1, 1,
+			-3, 3, -2, -1,
+			0, 0, 1, 0,
+			1, 0, 0, 0
+		);
+		let p = new THREE.Vector4().set(Math.pow(t, 3), Math.pow(t, 2), t, 1);
+		p.applyMatrix4(new THREE.Matrix4().multiplyMatrices(matriceTempsInverse, m));
+
+		return [p, dp]
 	},
 
 

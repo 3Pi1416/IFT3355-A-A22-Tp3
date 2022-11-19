@@ -104,7 +104,7 @@ TP3.Render = {
 
 			let haveApple = Math.random() <= applesProbability;
 			if (haveApple) {
-				
+
 				let geometryApple = new THREE.BoxGeometry(alpha, alpha, alpha);
 				let apple = new THREE.Mesh(geometryApple, new THREE.MeshPhongMaterial({ color: 0x5F0B0B }));
 				let matrixTranslationP1 = new THREE.Matrix4().makeTranslation(rootNode.p1.x, rootNode.p1.y, rootNode.p1.z);
@@ -117,7 +117,7 @@ TP3.Render = {
 	},
 
 	drawTreeHermite: function (rootNode, scene, alpha, leavesCutoff = 0.1, leavesDensity = 10, applesProbability = 0.05, matrix = new THREE.Matrix4()) {
-		//TODO
+		console.log(TP3.Geometry.hermite(rootNode.p0, rootNode.p1, rootNode.p0, rootNode.p1, 0.5))
 	},
 
 	updateTreeHermite: function (trunkGeometryBuffer, leavesGeometryBuffer, rootNode) {
