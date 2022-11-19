@@ -28,23 +28,23 @@ TP3.Render = {
 		}
 
 		//applqiuer la rotation a des matrice 
-		let matriceRotationTemporaire = new THREE.Matrix4();
-		let matrixRotationBase = new THREE.Matrix4();
-		matrixRotationBase.makeRotationY(teta)
-		matriceRotationTemporaire.makeRotationX(rho)
-		matrixRotationBase.multiply(matriceRotationTemporaire)
+		let matrixRotationX = new THREE.Matrix4();
+		let matrixRotationY = new THREE.Matrix4();
+		matrixRotationY.makeRotationY(teta)
+		matrixRotationX.makeRotationX(rho)
+		let matrixRotationBase = new THREE.Matrix4().multiplyMatrices(matrixRotationY, matrixRotationX);
+
+
 
 		// movement pour centrer le cylindre 
-		let matrixBasicMovement = new THREE.Matrix4().copy(matrixRotationBase);
-
-		let matrixTranslation = new THREE.Matrix4();
-		matrixTranslation.makeTranslation(vectorBranch.x / 2, vectorBranch.y / 2, vectorBranch.z / 2);
-		matrixBasicMovement.multiply(matrixTranslation);
-
+		let matrixTranslation = new THREE.Matrix4().makeTranslation(0, distanceBranch / 2, 0);
+		let matrixBasicMovement = new THREE.Matrix4().multiplyMatrices(matrixRotationBase, matrixTranslation);
+		// movement par rapport à l'arbre
 		let matrixTranslationP0 = new THREE.Matrix4().makeTranslation(rootNode.p0.x, rootNode.p0.y, rootNode.p0.z)
-		let matrixTransformation = new THREE.Matrix4().copy(matrixTranslationP0)
-		matrixTransformation.multiply(matrixBasicMovement)
-		branch.applyMatrix4(matrixTransformation)
+		let test = new THREE.Matrix4().multiplyMatrices(matrixTranslationP0, matrixBasicMovement);
+
+		// matrixTransformation.multiply(matrixBasicMovement)
+		branch.applyMatrix4(test)
 		scene.add(branch);
 
 
