@@ -5,7 +5,7 @@ TP3.Render = {
 
 		// il y des branche enfants
 
-		var distanceBranch = rootNode.p1.distanceTo(rootNode.p0);
+		let distanceBranch = rootNode.p1.distanceTo(rootNode.p0);
 		let cylinder = new THREE.CylinderBufferGeometry(rootNode.a1, rootNode.a0, distanceBranch, 32);
 		let branch = new THREE.Mesh(cylinder, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
 		let matrixRotationAxis = new THREE.Matrix4()
