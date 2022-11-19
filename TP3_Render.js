@@ -57,7 +57,24 @@ TP3.Render = {
 
 		if (rootNode.a0 < alpha * leavesCutoff) {
 			if (rootNode.childNode.length == 0) {
-				// si branche terminale
+				for (let i = 0; i < leavesDensity; i++) {
+					let square = new THREE.PlaneBufferGeometry(alpha, alpha);
+					let leaf = new THREE.Mesh(square, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
+					let randomForAngle = Math.random() * 2 * Math.PI;
+					let randomForAngle2 = Math.random() * 2 * Math.PI;
+					let randomForPosition = Math.random() * (distanceBranch + alpha);
+					let randomForDistanceFromBranch = (Math.random() - 0.5) * alpha;
+					let matrixTemp = new THREE.Matrix4();
+					matrixTemp.makeRotationX(randomForAngle2);
+					let matrixTransformationLeaf = new THREE.Matrix4().multiplyMatrices(matrixTranslationP0, matrixTemp);
+					matrixTemp.makeRotationY(randomForAngle);
+					matrixTransformationLeaf.multiply(matrixTemp);
+					matrixTemp.makeTranslation(randomForDistanceFromBranch, randomForPosition + alpha / 2, 0);
+					matrixTransformationLeaf.multiply(matrixTemp);
+					//appliquer la transformation de la branche
+					leaf.applyMatrix4(matrixTransformationLeaf);
+					scene.add(leaf); // j'utilise clairement pas correctement le plane buffer 
+				}
 
 			} else {
 				//  TODO
@@ -69,11 +86,6 @@ TP3.Render = {
 					let randomForAngle2 = Math.random() * 2 * Math.PI;
 					let randomForPosition = Math.random() * distanceBranch;
 					let randomForDistanceFromBranch = (Math.random() - 0.5) * alpha;
-
-
-
-
-
 					let matrixTemp = new THREE.Matrix4();
 					matrixTemp.makeRotationX(randomForAngle2);
 					let matrixTransformationLeaf = new THREE.Matrix4().multiplyMatrices(matrixTranslationP0, matrixTemp);
@@ -88,6 +100,16 @@ TP3.Render = {
 
 				}
 
+			}
+
+			let haveApple = Math.random() <= applesProbability;
+			if (haveApple) {
+				
+				let geometryApple = new THREE.BoxGeometry(alpha, alpha, alpha);
+				let apple = new THREE.Mesh(geometryApple, new THREE.MeshPhongMaterial({ color: 0x5F0B0B }));
+				let matrixTranslationP1 = new THREE.Matrix4().makeTranslation(rootNode.p1.x, rootNode.p1.y, rootNode.p1.z);
+				apple.applyMatrix4(matrixTranslationP1);
+				scene.add(apple);
 			}
 		}
 
