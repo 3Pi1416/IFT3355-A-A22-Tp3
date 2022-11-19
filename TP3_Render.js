@@ -62,28 +62,31 @@ TP3.Render = {
 			} else {
 				//  TODO
 				// THREE.BufferGeometryUtils.mergeBufferGeometries() 
-				// 	// for (let i = 0; i < leavesDensity; i++) {
-				// 	let square = new THREE.PlaneBufferGeometry(alpha, alpha);
-				// 	let leaf = new THREE.Mesh(square, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
-				// 	let randomForAngle = Math.random() * 2 * Math.PI;
-				// 	let randomForAngle2 = Math.random();
-				// 	let randomForPosition = Math.random() * distanceBranch;
-				// 	let randomForDistanceFromBranch = (Math.random() - 0.5) * alpha;
-				// 	let matrixTransformationLeaf = new THREE.Matrix4()
+				for (let i = 0; i < leavesDensity; i++) {
+					let square = new THREE.PlaneBufferGeometry(alpha, alpha);
+					let leaf = new THREE.Mesh(square, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
+					let randomForAngle = Math.random() * 2 * Math.PI;
+					let randomForAngle2 = Math.random() * 2 * Math.PI;
+					let randomForPosition = Math.random() * distanceBranch;
+					let randomForDistanceFromBranch = (Math.random() - 0.5) * alpha;
 
-				// 	matrixTransformationLeaf.makeTranslation(randomForDistanceFromBranch, randomForPosition + alpha / 2, 0);
-				// 	let matrixRotationLeaf = new THREE.Matrix4();
-				// 	matrixRotationLeaf.makeRotationX(randomForAngle2);
-				// 	matrixTransformationLeaf.multiply(matrixRotationLeaf);
-				// 	matrixRotationLeaf.makeRotationY(randomForAngle);
-				// 	matrixTransformationLeaf.multiply(matrixRotationLeaf);
-				// 	// appliquer la transformation de la branche 
-				// 	matrixTransformationLeaf.multiply(matrixTransformation);
-				// 	leaf.applyMatrix4(matrixTransformationLeaf);
 
-				// 	scene.add(leaf); // j'utilise clairement pas correctement le plane buffer 
 
-				// 	// }
+
+
+					let matrixTemp = new THREE.Matrix4();
+					matrixTemp.makeRotationX(randomForAngle2);
+					let matrixTransformationLeaf = new THREE.Matrix4().multiplyMatrices(matrixTranslationP0, matrixTemp);
+					matrixTemp.makeRotationY(randomForAngle);
+					matrixTransformationLeaf.multiply(matrixTemp);
+					matrixTemp.makeTranslation(randomForDistanceFromBranch, randomForPosition + alpha / 2, 0);
+					matrixTransformationLeaf.multiply(matrixTemp);
+					//appliquer la transformation de la branche
+					leaf.applyMatrix4(matrixTransformationLeaf);
+
+					scene.add(leaf); // j'utilise clairement pas correctement le plane buffer 
+
+				}
 
 			}
 		}
