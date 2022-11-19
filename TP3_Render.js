@@ -2,47 +2,117 @@ TP3.Render = {
 	drawTreeRough: function (rootNode, scene, alpha, radialDivisions = 8, leavesCutoff = 0.1, leavesDensity = 10, applesProbability = 0.05, matrix = new THREE.Matrix4()) {
 
 
-		if (rootNode.childNode.length == 0) {
-			// si feuille
-		} else {
 
-			const distanceBranch = rootNode.p1.distanceTo(rootNode.p0);
-			let cylinder = new THREE.CylinderGeometry(rootNode.a1, rootNode.a0, distanceBranch, 32);
-			let branch = new THREE.Mesh(cylinder, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
-			let matrix2 = new THREE.Matrix4()
+		//créer une branche 
+		let distanceBranch = rootNode.p1.distanceTo(rootNode.p0);
+		let cylinder = new THREE.CylinderBufferGeometry(rootNode.a1, rootNode.a0, distanceBranch, 32);
+		let branch = new THREE.Mesh(cylinder, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
 
 
-			let vectorBranch = new THREE.Vector3()
-			vectorBranch.subVectors(rootNode.p1, rootNode.p0);
-			matrix2.makeTranslation(vectorBranch.x / 2, vectorBranch.y / 2, vectorBranch.z / 2)
-			let matriceRotation = new THREE.Matrix4();
-
-			let rho = Math.PI / 2 - Math.asin(vectorBranch.y / distanceBranch);
-			let teta = Math.atan2(vectorBranch.x, vectorBranch.z);
+		// 
+		let vectorBranch = new THREE.Vector3();
+		vectorBranch.subVectors(rootNode.p1, rootNode.p0);
 
 
-			//Lorsqu'On fait un demi tour, on regarde de l'autre côté parce que la fonciton tan ne fais pas de différence avec ou est le négatif 
-			if (vectorBranch.z < 0) {
-				rho = rho - 2 * Math.PI;
-			}
-			if (vectorBranch.x < 0) {
-				teta = teta - 2 * Math.PI;
-			}
-
-			matriceRotation.makeRotationY(teta)
-			matrix2.multiply(matriceRotation)
-			matriceRotation.makeRotationX(rho)
-			matrix2.multiply(matriceRotation)
+		//calculer les angles pour la rotation des branche 
+		let rho = Math.PI / 2 - Math.asin(vectorBranch.y / distanceBranch);
+		let teta = Math.atan2(vectorBranch.x, vectorBranch.z);
 
 
-			let matrix3 = new THREE.Matrix4().makeTranslation(rootNode.p0.x, rootNode.p0.y, rootNode.p0.z)
-			matrix3.multiply(matrix2)
-			branch.applyMatrix4(matrix3)
-			scene.add(branch);
+		//Lorsqu'On fait un demi tour, on regarde de l'autre côté parce que la fonciton tan ne fais pas de différence avec ou est le négatif 
+		if (vectorBranch.z < 0) {
+			rho = rho - 2 * Math.PI;
+		}
+		if (vectorBranch.x < 0) {
+			teta = teta - 2 * Math.PI;
+		}
+
+		//applqiuer la rotation a des matrice 
+		let matrixRotationX = new THREE.Matrix4();
+		let matrixRotationY = new THREE.Matrix4();
+		matrixRotationY.makeRotationY(teta)
+		matrixRotationX.makeRotationX(rho)
+		let matrixRotationBase = new THREE.Matrix4().multiplyMatrices(matrixRotationY, matrixRotationX);
+
+
+
+		// movement pour centrer le cylindre 
+		let matrixTranslation = new THREE.Matrix4().makeTranslation(0, distanceBranch / 2, 0);
+		let matrixBasicMovement = new THREE.Matrix4().multiplyMatrices(matrixRotationBase, matrixTranslation);
+		// movement par rapport à l'arbre
+		let matrixTranslationP0 = new THREE.Matrix4().makeTranslation(rootNode.p0.x, rootNode.p0.y, rootNode.p0.z)
+		let test = new THREE.Matrix4().multiplyMatrices(matrixTranslationP0, matrixBasicMovement);
+
+		// matrixTransformation.multiply(matrixBasicMovement)
+		branch.applyMatrix4(test)
+		scene.add(branch);
+
+
+		if (rootNode.childNode.length != 0) {
 			rootNode.childNode.forEach(child => {
 				this.drawTreeRough(child, scene, alpha, radialDivisions, leavesCutoff, leavesDensity, applesProbability, matrix);
 			});
 		}
+
+
+		if (rootNode.a0 < alpha * leavesCutoff) {
+			if (rootNode.childNode.length == 0) {
+				for (let i = 0; i < leavesDensity; i++) {
+					let square = new THREE.PlaneBufferGeometry(alpha, alpha);
+					let leaf = new THREE.Mesh(square, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
+					let randomForAngle = Math.random() * 2 * Math.PI;
+					let randomForAngle2 = Math.random() * 2 * Math.PI;
+					let randomForPosition = Math.random() * (distanceBranch + alpha);
+					let randomForDistanceFromBranch = (Math.random() - 0.5) * alpha;
+					let matrixTemp = new THREE.Matrix4();
+					matrixTemp.makeRotationX(randomForAngle2);
+					let matrixTransformationLeaf = new THREE.Matrix4().multiplyMatrices(matrixTranslationP0, matrixTemp);
+					matrixTemp.makeRotationY(randomForAngle);
+					matrixTransformationLeaf.multiply(matrixTemp);
+					matrixTemp.makeTranslation(randomForDistanceFromBranch, randomForPosition + alpha / 2, 0);
+					matrixTransformationLeaf.multiply(matrixTemp);
+					//appliquer la transformation de la branche
+					leaf.applyMatrix4(matrixTransformationLeaf);
+					scene.add(leaf); // j'utilise clairement pas correctement le plane buffer 
+				}
+
+			} else {
+				//  TODO
+				// THREE.BufferGeometryUtils.mergeBufferGeometries() 
+				for (let i = 0; i < leavesDensity; i++) {
+					let square = new THREE.PlaneBufferGeometry(alpha, alpha);
+					let leaf = new THREE.Mesh(square, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
+					let randomForAngle = Math.random() * 2 * Math.PI;
+					let randomForAngle2 = Math.random() * 2 * Math.PI;
+					let randomForPosition = Math.random() * distanceBranch;
+					let randomForDistanceFromBranch = (Math.random() - 0.5) * alpha;
+					let matrixTemp = new THREE.Matrix4();
+					matrixTemp.makeRotationX(randomForAngle2);
+					let matrixTransformationLeaf = new THREE.Matrix4().multiplyMatrices(matrixTranslationP0, matrixTemp);
+					matrixTemp.makeRotationY(randomForAngle);
+					matrixTransformationLeaf.multiply(matrixTemp);
+					matrixTemp.makeTranslation(randomForDistanceFromBranch, randomForPosition + alpha / 2, 0);
+					matrixTransformationLeaf.multiply(matrixTemp);
+					//appliquer la transformation de la branche
+					leaf.applyMatrix4(matrixTransformationLeaf);
+
+					scene.add(leaf); // j'utilise clairement pas correctement le plane buffer 
+
+				}
+
+			}
+
+			let haveApple = Math.random() <= applesProbability;
+			if (haveApple) {
+				
+				let geometryApple = new THREE.BoxGeometry(alpha, alpha, alpha);
+				let apple = new THREE.Mesh(geometryApple, new THREE.MeshPhongMaterial({ color: 0x5F0B0B }));
+				let matrixTranslationP1 = new THREE.Matrix4().makeTranslation(rootNode.p1.x, rootNode.p1.y, rootNode.p1.z);
+				apple.applyMatrix4(matrixTranslationP1);
+				scene.add(apple);
+			}
+		}
+
 		return
 	},
 
