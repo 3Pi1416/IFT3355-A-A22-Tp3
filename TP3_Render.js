@@ -51,20 +51,24 @@ TP3.Render = {
 		if (rootNode.a0 < alpha * leavesCutoff) {
 			if (rootNode.childNode.length == 0) {
 				// si branche terminale
-				
+
 			} else {
+				//  TODO
+				// THREE.BufferGeometryUtils.mergeBufferGeometries() 
 				for (let i = 0; i < leavesDensity; i++) {
 					let square = new THREE.PlaneBufferGeometry(alpha, alpha);
 					let leaf = new THREE.Mesh(square, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
 					let randomForAngle = Math.random() * 2 * Math.PI;
-					// let randomForAngle2 = Math.random();
+					let randomForAngle2 = Math.random();
 					let randomForPosition = Math.random() * distanceBranch;
 					let randomForDistanceFromBranch = (Math.random() - 0.5) * alpha;
-
 					let matrixTransformationLeaf = new THREE.Matrix4()
-					matrixTransformationLeaf.makeTranslation(randomForDistanceFromBranch, randomForPosition, 0);
+
+					matrixTransformationLeaf.makeTranslation(randomForDistanceFromBranch, randomForPosition + alpha / 2, 0);
 					let matrixRotationLeaf = new THREE.Matrix4();
 					matrixRotationLeaf.makeRotationY(randomForAngle);
+					matrixTransformationLeaf.multiply(matrixRotationLeaf);
+					matrixRotationLeaf.makeRotationX(randomForAngle2);
 					matrixTransformationLeaf.multiply(matrixRotationLeaf);
 					// appliquer la transformation de la branche 
 					matrixTransformationLeaf.multiply(matrixTransformation);
@@ -73,7 +77,7 @@ TP3.Render = {
 					scene.add(leaf); // j'utilise clairement pas correctement le plane buffer 
 
 				}
-				
+
 			}
 		}
 
