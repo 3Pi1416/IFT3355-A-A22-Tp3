@@ -76,29 +76,8 @@ TP3.Geometry = {
 
 			let radius = rootNode.a0 * (1 - t) + rootNode.a1 * t;
 
-
-
-
 			let centralPoint = hermitePoint[0];
 			let vectorTangente = hermitePoint[1].normalize();
-
-
-
-			// //temp
-			// let centralPoint = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.p0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.p1, t));
-			// let vectorTangente = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.v0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.v1, t));
-			// vectorTangente.normalize();
-
-
-			// let theta = Math.PI
-			// if (vectorTangente.z != 0) {
-			// 	theta = theta + + Math.atan2(vectorTangente.x, vectorTangente.z);
-			// 	if (vectorTangente.x < 0) {
-			// 		theta = theta - 2 * Math.PI;
-			// 	}
-			// 	let matrixRotationZ = new THREE.Matrix4().makeRotationY(theta)
-			// 	point.applyMatrix4(matrixRotationZ);
-			// }
 
 			let point = new THREE.Vector3(radius, 0, 0);
 			if (vectorTangente.y != 0) {
@@ -107,11 +86,6 @@ TP3.Geometry = {
 				if (vectorTangente.z < 0) {
 					rho = rho - 2 * Math.PI;
 				}
-
-				// //appliquer la rotation a des matrice 
-				// let matrixRotationX = new THREE.Matrix4().makeRotationX(rho)
-				// point.applyMatrix4(matrixRotationX);
-
 				point = new THREE.Vector3(Math.abs(radius * Math.cos(rho)), radius * Math.sin(rho), 0);
 			}
 
@@ -146,22 +120,6 @@ TP3.Geometry = {
 			v0.x, v0.y, v0.z, 1,
 			v1.x, v1.y, v1.z, 1
 		);
-
-		// let matriceTempsInverse = new THREE.Matrix4().set(
-		// 	2, -2, 1, 1,
-		// 	-3, 3, -2, -1,
-		// 	0, 0, 1, 0,
-		// 	1, 0, 0, 0
-		// );
-
-		// let p = new THREE.Vector4().set(Math.pow(t, 3), Math.pow(t, 2), t, 1);
-		// p.applyMatrix4(new THREE.Matrix4().multiplyMatrices(matriceTempsInverse, m));
-		// let dp = new THREE.Vector4().set(3 * Math.pow(t, 2), 2 * t, 1, 0);
-		// dp.applyMatrix4(new THREE.Matrix4().multiplyMatrices(matriceTempsInverse, m));
-
-
-
-
 
 		let matrixDeCasteljau = new THREE.Matrix4().set(
 			1, 0, 0, 0,
