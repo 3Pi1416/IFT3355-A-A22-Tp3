@@ -65,19 +65,12 @@ TP3.Geometry = {
 
 	generateSegmentsHermite: function (rootNode, lengthDivisions = 4, radialDivisions = 8) {
 
-		//TEMPS !!!!!!!!!!!!!!!!!!
-		// lengthDivisions = 2;
-
-
 		let numberOfChild = rootNode.childNode.length;
-		let distanceBranch = rootNode.p1.distanceTo(rootNode.p0);
-
-		let lengthOfNode = distanceBranch / (lengthDivisions - 1);
 		rootNode.sections = []
 
 		let degree = 2 * Math.PI / radialDivisions;
-		for (let i = 0; i < lengthDivisions; i++) {
-			let t = i / (lengthDivisions - 1);
+		for (let i = 0; i <= lengthDivisions-1; i++) {
+			let t = i / (lengthDivisions-1);
 
 			let hermitePoint = this.hermite(rootNode.p0, rootNode.p1, rootNode.v0, rootNode.v1, t)
 
@@ -85,34 +78,49 @@ TP3.Geometry = {
 
 
 
-			// let centralPoint = hermitePoint[0];
-			// let vectorNormalTemp = hermitePoint[1];
-			// console.log(centralPoint, vectorNormalTemp)
+
+			let centralPoint = hermitePoint[0];
+			let vectorTangente = hermitePoint[1].normalize();
+
+
 
 			// //temp
-			let centralPoint = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.p0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.p1, t));
-			let vectorTangenteTemp = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.v0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.v1, t));
-			vectorTangenteTemp.normalize();
+			// let centralPoint = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.p0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.p1, t));
+			// let vectorTangente = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.v0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.v1, t));
+			// vectorTangente.normalize();
+
+
+			// let theta = Math.PI
+			// if (vectorTangente.z != 0) {
+			// 	theta = theta + + Math.atan2(vectorTangente.x, vectorTangente.z);
+			// 	if (vectorTangente.x < 0) {
+			// 		theta = theta - 2 * Math.PI;
+			// 	}
+			// 	let matrixRotationZ = new THREE.Matrix4().makeRotationY(theta)
+			// 	point.applyMatrix4(matrixRotationZ);
+			// }
 
 			let point = new THREE.Vector3(radius, 0, 0);
+			if (vectorTangente.y != 0) {
+				//calculer les angles pour la rotation des branche 
+				let rho = Math.PI / 2 - Math.asin(vectorTangente.y);
+				if (vectorTangente.z < 0) {
+					rho = rho - 2 * Math.PI;
+				}
 
+				// //appliquer la rotation a des matrice 
+				// let matrixRotationX = new THREE.Matrix4().makeRotationX(rho)
+				// point.applyMatrix4(matrixRotationX);
 
-			//calculer les angles pour la rotation des branche 
-			let rho = Math.PI / 2 - Math.asin(vectorTangenteTemp.y);
-			if (centralPoint.z < 0) {
-				rho = rho - 2 * Math.PI;
+				point = new THREE.Vector3(Math.abs(radius * Math.cos(rho)), radius * Math.sin(rho), 0);
 			}
-
-			//appliquer la rotation a des matrice 
-			let matrixRotationX = new THREE.Matrix4().makeRotationX(rho)
-
-			point.applyMatrix4(matrixRotationX);
 
 			let arrayPoint = []
 			for (let j = 0; j < radialDivisions; j++) {
+				console.log(point.length(), radius, rootNode.a0, rootNode.a1, point.length() < rootNode.a1)
 				let newPoint = new THREE.Vector3(point.x + centralPoint.x, point.y + centralPoint.y, point.z + centralPoint.z)
 				arrayPoint.push(newPoint)
-				point.applyAxisAngle(vectorTangenteTemp, degree);
+				point.applyAxisAngle(vectorTangente, degree);
 			}
 			rootNode.sections.push(arrayPoint)
 		}
@@ -179,7 +187,8 @@ TP3.Geometry = {
 	bezier: function (listPoint, t) {
 		if (listPoint.length == 2) {
 			let newPoint = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(listPoint[0], (1 - t)), new THREE.Vector3().addScaledVector(listPoint[1], t));
-			return [newPoint, new THREE.Vector3];
+			let newPointTangente = new THREE.Vector3().subVectors(listPoint[0], listPoint[1]);
+			return [newPoint, newPointTangente];
 		}
 
 		let newArray = []
