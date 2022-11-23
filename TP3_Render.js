@@ -27,7 +27,7 @@ TP3.Render = {
 			teta = teta - 2 * Math.PI;
 		}
 
-		//applqiuer la rotation a des matrice 
+		//appliquer la rotation a des matrice 
 		let matrixRotationX = new THREE.Matrix4();
 		let matrixRotationY = new THREE.Matrix4();
 		matrixRotationY.makeRotationY(teta)
@@ -52,6 +52,7 @@ TP3.Render = {
 			rootNode.childNode.forEach(child => {
 				this.drawTreeRough(child, scene, alpha, radialDivisions, leavesCutoff, leavesDensity, applesProbability, matrix);
 			});
+			// this.drawTreeRough(rootNode.childNode[0], scene, alpha, radialDivisions, leavesCutoff, leavesDensity, applesProbability, matrix);
 		}
 
 
