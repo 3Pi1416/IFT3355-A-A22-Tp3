@@ -43,15 +43,6 @@ TP3.Geometry = {
 
 		}
 
-		// pour précaculer pour la partie d 
-		if (rootNode.parentNode == null) {
-			rootNode.v0 = new THREE.Vector3(0, 1, 0);
-		} else {
-			rootNode.v0 = rootNode.parentNode.v1;
-		}
-		rootNode.v1 = new THREE.Vector3().subVectors(rootNode.p1, rootNode.p0);
-
-
 		if (numberOfChild >= 1) {
 			{
 				rootNode.childNode.forEach(node => {
@@ -65,12 +56,22 @@ TP3.Geometry = {
 
 	generateSegmentsHermite: function (rootNode, lengthDivisions = 4, radialDivisions = 8) {
 
+
+		if (rootNode.parentNode == null) {
+			rootNode.v0 = new THREE.Vector3(0, 1, 0);
+		} else {
+			rootNode.v0 = rootNode.parentNode.v1;
+		}
+		rootNode.v1 = new THREE.Vector3().subVectors(rootNode.p1, rootNode.p0);
+
+
 		let numberOfChild = rootNode.childNode.length;
 		rootNode.sections = []
 
+
 		let degree = 2 * Math.PI / radialDivisions;
-		for (let i = 0; i <= lengthDivisions-1; i++) {
-			let t = i / (lengthDivisions-1);
+		for (let i = 0; i <= lengthDivisions - 1; i++) {
+			let t = i / (lengthDivisions - 1);
 
 			let hermitePoint = this.hermite(rootNode.p0, rootNode.p1, rootNode.v0, rootNode.v1, t)
 
@@ -91,7 +92,6 @@ TP3.Geometry = {
 
 			let arrayPoint = []
 			for (let j = 0; j < radialDivisions; j++) {
-				console.log(point.length(), radius, rootNode.a0, rootNode.a1, point.length() < rootNode.a1)
 				let newPoint = new THREE.Vector3(point.x + centralPoint.x, point.y + centralPoint.y, point.z + centralPoint.z)
 				arrayPoint.push(newPoint)
 				point.applyAxisAngle(vectorTangente, degree);
