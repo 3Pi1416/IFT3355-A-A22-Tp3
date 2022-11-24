@@ -77,8 +77,12 @@ TP3.Geometry = {
 
 			let radius = rootNode.a0 * (1 - t) + rootNode.a1 * t;
 
-			let centralPoint = hermitePoint[0];
-			let vectorTangente = hermitePoint[1].normalize();
+			// let centralPoint = hermitePoint[0];
+			// let vectorTangente = hermitePoint[1].normalize();
+
+			let centralPoint = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.p0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.p1, t));
+			let vectorTangente = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.v0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.v1, t));
+			vectorTangente.normalize();
 
 			let point = new THREE.Vector3(radius, 0, 0);
 			if (vectorTangente.y != 0) {
@@ -87,11 +91,13 @@ TP3.Geometry = {
 				if (vectorTangente.z < 0) {
 					rho = rho - 2 * Math.PI;
 				}
-				point = new THREE.Vector3(Math.abs(radius * Math.cos(rho)), radius * Math.sin(rho), 0);
+				// point = new THREE.Vector3(Math.abs(radius * Math.cos(rho)), radius * Math.sin(rho), 0);
+				point = new THREE.Vector3(radius * (1 - Math.sin(rho)), radius * Math.sin(rho), 0);
+
 			}
 
 			let arrayPoint = []
-			for (let j = 0; j < radialDivisions; j++) {
+			for (let j = 0; j < radialDivisions + 1; j++) {
 				let newPoint = new THREE.Vector3(point.x + centralPoint.x, point.y + centralPoint.y, point.z + centralPoint.z)
 				arrayPoint.push(newPoint)
 				point.applyAxisAngle(vectorTangente, degree);
