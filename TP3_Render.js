@@ -119,52 +119,55 @@ TP3.Render = {
 
 	drawTreeHermite: function (rootNode, scene, alpha, leavesCutoff = 0.1, leavesDensity = 10, applesProbability = 0.05, matrix = new THREE.Matrix4()) {
 
-
+		let vertices = [];
 
 		for (let i = 0; i < rootNode.sections.length - 1; i++) {
 			for (let j = 0; j < rootNode.sections[i].length - 1; j++) {
-
-				// 2 triangle a partir de 4 vertex 
-				let vertices = [];
 				vertices.push(rootNode.sections[i][j].x, rootNode.sections[i][j].y, rootNode.sections[i][j].z);
 				vertices.push(rootNode.sections[i][j].x, rootNode.sections[i][j].y, rootNode.sections[i][j].z);
 				vertices.push(rootNode.sections[i][j].x, rootNode.sections[i][j].y, rootNode.sections[i][j].z);
-				let f32vertices = new Float32Array(vertices);
-				let geometry = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(f32vertices, 3));
-				branchMesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
-				scene.add(branchMesh);
-
 			}
 		}
 
-		// branchMesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
-		// scene.add(branchMesh);
+		let f32vertices = new Float32Array(vertices);
+		let geometry = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(f32vertices, 3));
+
+		let facesIdx = [];
+		facesIdx.push(0, 1, 2);
+		facesIdx.push(1, 2, 3);
+		facesIdx.push(4, 5, 5);
+		geometry.setIndex(facesIdx); geometry.computeVertexNormals();
 
 
-		// for (j = 0; j < rootNode.sections[i].length - 1; j++) {
-
-		// 	// 2 triangle a partir de 4 vertex 
-		// 	let vertices = [];
-		// 	vertices.push(rootNode.sections[i][j].x, rootNode.sections[i][j].y, rootNode.sections[i][j].z);
-		// 	vertices.push(rootNode.sections[i + 1][j].x, rootNode.sections[i + 1][j].y, rootNode.sections[i + 1][j].z);
-		// 	vertices.push(rootNode.sections[i][j + 1].x, rootNode.sections[i][j + 1].y, rootNode.sections[i][j + 1].z);
-		// 	let f32vertices = new Float32Array(vertices);
-		// 	let geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.BufferAttribute(f32vertices, 3));
-		// 	let branchMesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
-		// 	scene.add(branchMesh);
+		branchMesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
+		scene.add(branchMesh);
 
 
-		// 	vertices = [];
-		// 	vertices.push(rootNode.sections[i][j + 1].x, rootNode.sections[i][j + 1].y, rootNode.sections[i][j + 1].z);
-		// 	vertices.push(rootNode.sections[i + 1][j].x, rootNode.sections[i + 1][j].y, rootNode.sections[i + 1][j].z);
-		// 	vertices.push(rootNode.sections[i + 1][j + 1].x, rootNode.sections[i + 1][j + 1].y, rootNode.sections[i + 1][j + 1].z);
-		// 	f32vertices = new Float32Array(vertices);
-		// 	geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.BufferAttribute(f32vertices, 3));
-		// 	branchMesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
-		// 	scene.add(branchMesh);
+		// for (let i = 0; i < rootNode.sections.length - 1; i++) {
+		// 	for (j = 0; j < rootNode.sections[i].length - 1; j++) {
 
+		// 		// 2 triangle a partir de 4 vertex 
+		// 		let vertices = [];
+		// 		vertices.push(rootNode.sections[i][j].x, rootNode.sections[i][j].y, rootNode.sections[i][j].z);
+		// 		vertices.push(rootNode.sections[i + 1][j].x, rootNode.sections[i + 1][j].y, rootNode.sections[i + 1][j].z);
+		// 		vertices.push(rootNode.sections[i][j + 1].x, rootNode.sections[i][j + 1].y, rootNode.sections[i][j + 1].z);
+		// 		let f32vertices = new Float32Array(vertices);
+		// 		let geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.BufferAttribute(f32vertices, 3));
+		// 		let branchMesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
+		// 		scene.add(branchMesh);
+
+
+		// 		vertices = [];
+		// 		vertices.push(rootNode.sections[i][j + 1].x, rootNode.sections[i][j + 1].y, rootNode.sections[i][j + 1].z);
+		// 		vertices.push(rootNode.sections[i + 1][j].x, rootNode.sections[i + 1][j].y, rootNode.sections[i + 1][j].z);
+		// 		vertices.push(rootNode.sections[i + 1][j + 1].x, rootNode.sections[i + 1][j + 1].y, rootNode.sections[i + 1][j + 1].z);
+		// 		f32vertices = new Float32Array(vertices);
+		// 		geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.BufferAttribute(f32vertices, 3));
+		// 		branchMesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
+		// 		scene.add(branchMesh);
+
+		// 	}
 		// }
-
 
 		if (rootNode.childNode.length != 0) {
 			rootNode.childNode.forEach(child => {
