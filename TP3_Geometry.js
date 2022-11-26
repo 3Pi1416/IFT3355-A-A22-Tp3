@@ -14,6 +14,7 @@ class Node {
 		this.v1 = null;
 
 		this.sections = null; //Liste contenant une liste de points representant les segments circulaires du cylindre generalise
+		this.points = null;
 	}
 }
 
@@ -67,6 +68,7 @@ TP3.Geometry = {
 
 		let numberOfChild = rootNode.childNode.length;
 		rootNode.sections = []
+		rootNode.points = []
 
 
 		let degree = 2 * Math.PI / (radialDivisions);
@@ -79,30 +81,25 @@ TP3.Geometry = {
 
 			let centralPoint = hermitePoint[0];
 			let vectorTangente = hermitePoint[1].normalize();
+
+			rootNode.points.push(centralPoint.clone())
 			// let centralPoint = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.p0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.p1, t));
 			// let vectorTangente = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.v0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.v1, t));
 			// vectorTangente.normalize();
 
 
 			// change le direction de la normal afin de garder un sens au branche 	
-			if (vectorTangente.x > 0) {
-				vectorTangente.x = - vectorTangente.x;
-				vectorTangente.y = - vectorTangente.y;
-				vectorTangente.z = - vectorTangente.z;
-			}
-
-
-
-			// //calculer les angles pour la rotation des branche 
-			// let theta = Math.atan2(vectorTangente.x, vectorTangente.z);
-			// if (vectorTangente.z < 0) {
-			// 	theta = theta - 2 * Math.PI;
+			// if (vectorTangente.x > 0) {
+			// 	vectorTangente.x = - vectorTangente.x;
+			// 	vectorTangente.y = - vectorTangente.y;
+			// 	vectorTangente.z = - vectorTangente.z;
 			// }
 
-			// let rho = Math.asin(vectorTangente.y);
-			// if ((vectorTangente.x < 0 && vectorTangente.y > 0)) {
-			// 	rho = rho - 2 * Math.PI;
-			// }
+
+
+			//calculer les angles pour la rotation des branche 
+
+
 
 
 
@@ -115,37 +112,36 @@ TP3.Geometry = {
 			point2.normalize();
 			point2.multiplyScalar(radius);
 
-
-
-			// if (vectorTangente.x > 0.75) {
-			// 	point2 = new THREE.Vector3(0, radius * vectorTangente.z, - radius * vectorTangente.y);
-			// 	point1 = new THREE.Vector3().crossVectors(vectorTangente, point1).normalize().multiplyScalar(radius);
+			// let rho = Math.asin(vectorTangente.y);
+			// if ((vectorTangente.x < 0 && vectorTangente.y > 0)) {
+			// 	rho = rho - 2 * Math.PI;
 			// }
+			// let hypothenuseX =  Math.cos(rho)
+			let theta = 0;
 
-			// if (vectorTangente.y > 0.75) {
-			// 	point1 = new THREE.Vector3(radius * vectorTangente.z, 0, - radius * vectorTangente.x);
-			// 	point2 = new THREE.Vector3().crossVectors(vectorTangente, point1).normalize().multiplyScalar(radius);
-			// }
 
 			if (point1.x < 0) {
 				point1 = new THREE.Vector3(-point1.x, -point1.y, -point1.z);
 			}
 
-			if (point1.x < 0 || (point2.z < 0 && point2.z > 0.5) || (point2.y && point2.y > 0.5)) {
-				point2 = new THREE.Vector3(-point2.x, -point2.y, -point2.z);
+			if (vectorTangente.y < 0) {
+				theta = Math.PI;
 			}
+			// if (point1.x < 0 || (point2.z < 0 && point2.z > 0.5) || (point2.y && point2.y > 0.5)) {
+			// 	point2 = new THREE.Vector3(-point2.x, -point2.y, -point2.z);
+			// }
 
-			if (vectorTangente.x > 0.999) {
-				point1 = new THREE.Vector3(0, radius, 0);
+			if (Math.abs(vectorTangente.x) > 0.999) {
+				point1 = new THREE.Vector3(0, -radius, 0);
 				point2 = new THREE.Vector3(0, 0, radius);
 
 			}
-			if (vectorTangente.z > 0.999) {
+			if (Math.abs(vectorTangente.z > 0.999)) {
 				point1 = new THREE.Vector3(radius, 0, 0);
-				point2 = new THREE.Vector3(0, radius, 0);
+				point2 = new THREE.Vector3(0, -radius, 0);
 
 			}
-			if (vectorTangente.y > 0.999) {
+			if (Math.abs(vectorTangente.y > 0.999)) {
 				point1 = new THREE.Vector3(radius, 0, 0);
 				point2 = new THREE.Vector3(0, 0, radius);
 
@@ -153,8 +149,8 @@ TP3.Geometry = {
 			for (let j = 0; j < radialDivisions + 1; j++) {
 				// créer le point de base en utilisant en utilisant l'opposé en x, z de la tangente
 				// let point = new THREE.Vector3(radius, 0, 0);
-				let a = Math.cos(j * degree);
-				let b = Math.sin(j * degree);
+				let a = Math.cos(theta + j * degree);
+				let b = Math.sin(theta + j * degree);
 				let point = new THREE.Vector3(point1.x * a + point2.x * b, point1.y * a + point2.y * b, point1.z * a + point2.z * b);
 				// let point = new THREE.Vector3(hypothenuseXZ * Math.cos(rotation), radius * Math.sin(rho) * Math.cos(rotation + theta), hypothenuseXZ * Math.sin(rotation));
 
