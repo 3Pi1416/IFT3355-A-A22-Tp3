@@ -27,7 +27,7 @@ TP3.Render = {
 			teta = teta - 2 * Math.PI;
 		}
 
-		//applqiuer la rotation a des matrice 
+		//appliquer la rotation a des matrice 
 		let matrixRotationX = new THREE.Matrix4();
 		let matrixRotationY = new THREE.Matrix4();
 		matrixRotationY.makeRotationY(teta)
@@ -52,6 +52,7 @@ TP3.Render = {
 			rootNode.childNode.forEach(child => {
 				this.drawTreeRough(child, scene, alpha, radialDivisions, leavesCutoff, leavesDensity, applesProbability, matrix);
 			});
+			// this.drawTreeRough(rootNode.childNode[0], scene, alpha, radialDivisions, leavesCutoff, leavesDensity, applesProbability, matrix);
 		}
 
 
@@ -104,7 +105,7 @@ TP3.Render = {
 
 			let haveApple = Math.random() <= applesProbability;
 			if (haveApple) {
-				
+
 				let geometryApple = new THREE.BoxGeometry(alpha, alpha, alpha);
 				let apple = new THREE.Mesh(geometryApple, new THREE.MeshPhongMaterial({ color: 0x5F0B0B }));
 				let matrixTranslationP1 = new THREE.Matrix4().makeTranslation(rootNode.p1.x, rootNode.p1.y, rootNode.p1.z);
@@ -117,7 +118,139 @@ TP3.Render = {
 	},
 
 	drawTreeHermite: function (rootNode, scene, alpha, leavesCutoff = 0.1, leavesDensity = 10, applesProbability = 0.05, matrix = new THREE.Matrix4()) {
-		//TODO
+
+		let vertices = [];
+		let facesIdx = [];
+
+		let number = 0;
+		for (let i = 0; i < rootNode.sections.length - 1; i++) {
+			let j;
+			for (j = 0; j < rootNode.sections[i].length - 1; j++) {
+				facesIdx.push(number, number + 1, number + 2, number + 3, number + 4, number + 5);
+
+				// 2 triangle a partir de 4 vertex 
+				vertices.push(rootNode.sections[i][j].x, rootNode.sections[i][j].y, rootNode.sections[i][j].z);
+				vertices.push(rootNode.sections[i + 1][j].x, rootNode.sections[i + 1][j].y, rootNode.sections[i + 1][j].z);
+				vertices.push(rootNode.sections[i][j + 1].x, rootNode.sections[i][j + 1].y, rootNode.sections[i][j + 1].z);
+
+				vertices.push(rootNode.sections[i][j + 1].x, rootNode.sections[i][j + 1].y, rootNode.sections[i][j + 1].z);
+				vertices.push(rootNode.sections[i + 1][j].x, rootNode.sections[i + 1][j].y, rootNode.sections[i + 1][j].z);
+				vertices.push(rootNode.sections[i + 1][j + 1].x, rootNode.sections[i + 1][j + 1].y, rootNode.sections[i + 1][j + 1].z);
+				number = number + 6;
+			}
+
+		}
+
+		let f32vertices = new Float32Array(vertices);
+		let branches = new THREE.BufferGeometry();
+		branches.setAttribute("position", new THREE.BufferAttribute(f32vertices, 3));
+		branches.setIndex(facesIdx);
+		branches.computeVertexNormals();
+
+		let branchMesh = new THREE.Mesh(branches, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
+		scene.add(branchMesh);
+
+		vertices = [];
+		facesIdx = [];
+		let angle = Math.cos(Math.PI / 4)
+		let distanceBranch
+		if (rootNode.a0 < alpha * leavesCutoff) {
+			if (rootNode.childNode.length == 0) {
+				for (let i = 0; i < leavesDensity; i++) {
+
+					let randomPart = Math.floor(Math.random() * (rootNode.points.length - 1))
+					facesIdx.push((i * 3), (i * 3) + 1, (i * 3) + 2)
+
+					let pointSegment0 = rootNode.points[randomPart];
+					let pointSegment1 = rootNode.points[randomPart + 1];
+					distanceBranch = pointSegment1.distanceTo(pointSegment0);
+					let matrixTranslation = new THREE.Matrix4().makeTranslation(pointSegment0.x, pointSegment0.y, pointSegment0.z)
+					let randomForAngle = Math.random() * 2 * Math.PI;
+					let randomForAngle2 = Math.random() * 2 * Math.PI;
+					let randomForPosition = Math.random() * (distanceBranch + alpha);
+					let randomForDistanceFromBranch = (Math.random() - 0.5) * alpha;
+					let matrixTemp = new THREE.Matrix4();
+					matrixTemp.makeRotationX(randomForAngle2);
+					let matrixTransformationLeaf = new THREE.Matrix4().multiplyMatrices(matrixTranslation, matrixTemp);
+					matrixTemp.makeRotationY(randomForAngle);
+					matrixTransformationLeaf.multiply(matrixTemp);
+					matrixTemp.makeTranslation(randomForDistanceFromBranch, randomForPosition + alpha / 2, 0);
+					matrixTransformationLeaf.multiply(matrixTemp);
+					//appliquer la transformation de la branche
+					let point1 = new THREE.Vector3(0, 0, 0)
+					let point2 = new THREE.Vector3(alpha, 0, 0);
+					let point3 = new THREE.Vector3(alpha / 2, angle * alpha, 0);
+
+					point1.applyMatrix4(matrixTransformationLeaf)
+					point2.applyMatrix4(matrixTransformationLeaf)
+					point3.applyMatrix4(matrixTransformationLeaf)
+					vertices.push(point1.x, point1.y, point1.z)
+					vertices.push(point2.x, point2.y, point2.z)
+					vertices.push(point3.x, point3.y, point3.z)
+
+				}
+
+			} else {
+				//  TODO
+				// THREE.BufferGeometryUtils.mergeBufferGeometries() 
+				for (let i = 0; i < leavesDensity; i++) {
+					facesIdx.push((i * 3), (i * 3) + 1, (i * 3) + 2)
+					let randomPart = Math.floor(Math.random() * (rootNode.points.length - 1))
+
+					let pointSegment0 = rootNode.points[randomPart];
+					let pointSegment1 = rootNode.points[randomPart + 1];
+					distanceBranch = pointSegment1.distanceTo(pointSegment0);
+					let matrixTranslation = new THREE.Matrix4().makeTranslation(pointSegment0.x, pointSegment0.y, pointSegment0.z)
+					let randomForAngle = Math.random() * 2 * Math.PI;
+					let randomForAngle2 = Math.random() * 2 * Math.PI;
+					let randomForPosition = Math.random() * distanceBranch;
+					let randomForDistanceFromBranch = (Math.random() - 0.5) * alpha;
+					let matrixTemp = new THREE.Matrix4();
+					matrixTemp.makeRotationX(randomForAngle2);
+					let matrixTransformationLeaf = new THREE.Matrix4().multiplyMatrices(matrixTranslation, matrixTemp);
+					matrixTemp.makeRotationY(randomForAngle);
+					matrixTransformationLeaf.multiply(matrixTemp);
+					matrixTemp.makeTranslation(randomForDistanceFromBranch, randomForPosition + alpha / 2, 0);
+					matrixTransformationLeaf.multiply(matrixTemp);
+					//appliquer la transformation de la branche
+					let pointLeaf1 = new THREE.Vector3(0, 0, 0)
+					let pointLeaf2 = new THREE.Vector3(alpha, 0, 0);
+					let pointLeaf3 = new THREE.Vector3(alpha / 2, angle * alpha, 0);
+					pointLeaf1.applyMatrix4(matrixTransformationLeaf)
+					pointLeaf2.applyMatrix4(matrixTransformationLeaf)
+					pointLeaf3.applyMatrix4(matrixTransformationLeaf)
+					vertices.push(pointLeaf1.x, pointLeaf1.y, pointLeaf1.z)
+					vertices.push(pointLeaf2.x, pointLeaf2.y, pointLeaf2.z)
+					vertices.push(pointLeaf3.x, pointLeaf3.y, pointLeaf3.z)
+				}
+			}
+			f32vertices = new Float32Array(vertices);
+			let leafs = new THREE.BufferGeometry();
+			leafs.setAttribute("position", new THREE.BufferAttribute(f32vertices, 3));
+			leafs.setIndex(facesIdx);
+			leafs.computeVertexNormals();
+			let leafsMesh = new THREE.Mesh(leafs, new THREE.MeshLambertMaterial({ color: 0x3A5F0B, side: THREE.DoubleSide }));
+			scene.add(leafsMesh);
+
+
+			let haveApple = Math.random() <= applesProbability;
+			if (haveApple) {
+
+				let geometryApple = new THREE.SphereBufferGeometry(alpha / 2, 32, 32);
+				let apple = new THREE.Mesh(geometryApple, new THREE.MeshPhongMaterial({ color: 0x5F0B0B }));
+				let matrixTranslationP1 = new THREE.Matrix4().makeTranslation(rootNode.p1.x, rootNode.p1.y - alpha / 2, rootNode.p1.z);
+				apple.applyMatrix4(matrixTranslationP1);
+				scene.add(apple);
+			}
+
+		}
+		if (rootNode.childNode.length != 0) {
+			rootNode.childNode.forEach(child => {
+				this.drawTreeHermite(child, scene, alpha, leavesCutoff, leavesDensity, applesProbability, matrix);
+			});
+
+		}
+
 	},
 
 	updateTreeHermite: function (trunkGeometryBuffer, leavesGeometryBuffer, rootNode) {
