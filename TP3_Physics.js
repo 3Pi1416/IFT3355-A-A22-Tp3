@@ -54,6 +54,34 @@ TP3.Physics = {
 		node.vel.add(new THREE.Vector3(0, -node.mass, 0).multiplyScalar(dt));
 
 		// TODO: Projection du mouvement, force de restitution et amortissement de la velocite
+		// p0 depend de la position precedante
+		// p1 change en fonction de la somme des forces qui si applique plus celle dans noeuds parents.
+		// Mouvenemtn des branches selon le vent est comme un ressort (F = -k(stretchLenght - equilibrium)directionAvecVitess)
+		
+		let angleZ = Math.atan2(node.p1.z, node.vel.z);
+		let angleX = Math.atan2(node.p1.x, node.vel.x);
+		let matriceMouv = new THREE.Matrix4();
+		let maxRotationX = new THREE.Matrix4();
+		// let maxRotationY = new THREE.Matrix4();
+		let maxRotationZ = new THREE.Matrix4();
+		maxRotationZ.makeRotationZ(angleZ);
+		// maxRotationY.makeRotationY(teta);
+		maxRotationX.makeRotationX(angleX);
+		matriceMouv.multiplyMatrices(maxRotationZ, maxRotationX);
+		maxMouvementY = new THREE.Matrix4();
+		
+		maxMouvementY.makeTranslation(node.p1.y + node.vel.y);
+
+		matriceMovForces = new THREE.Matrix4().multiplyMatrices(matriceMouv, maxMouvementY)
+
+			// matrixTransformation.multiply(matrixBasicMovement)
+		
+		updateTreeSkeleton(geometryBuffer, node)
+
+
+		
+
+
 
 		// Appel recursif sur les enfants
 		for (var i = 0; i < node.childNode.length; i++) {
