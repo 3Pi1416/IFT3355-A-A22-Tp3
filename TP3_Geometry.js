@@ -115,6 +115,8 @@ TP3.Geometry = {
 			point2.normalize();
 			point2.multiplyScalar(radius);
 
+
+
 			// if (vectorTangente.x > 0.75) {
 			// 	point2 = new THREE.Vector3(0, radius * vectorTangente.z, - radius * vectorTangente.y);
 			// 	point1 = new THREE.Vector3().crossVectors(vectorTangente, point1).normalize().multiplyScalar(radius);
@@ -126,12 +128,13 @@ TP3.Geometry = {
 			// }
 
 			if (point1.x < 0) {
-				point1 = new THREE.Vector3(-point1.x, -point1.y, 0);
+				point1 = new THREE.Vector3(-point1.x, -point1.y, -point1.z);
 			}
 
-			if (point2.z < 0) {
-				point2 = new THREE.Vector3(0, -point2.y, -point2.z);
+			if (point1.x < 0 || (point2.z < 0 && point2.z > 0.5) || (point2.y && point2.y > 0.5)) {
+				point2 = new THREE.Vector3(-point2.x, -point2.y, -point2.z);
 			}
+
 			if (vectorTangente.x > 0.999) {
 				point1 = new THREE.Vector3(0, radius, 0);
 				point2 = new THREE.Vector3(0, 0, radius);
