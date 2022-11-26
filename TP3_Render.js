@@ -124,7 +124,7 @@ TP3.Render = {
 
 		let number = 0;
 		for (let i = 0; i < rootNode.sections.length - 1; i++) {
-			let j = 0;
+			let j ;
 			for (j = 0; j < rootNode.sections[i].length - 1; j++) {
 				facesIdx.push(number, number + 1, number + 2, number + 3, number + 4, number + 5);
 
