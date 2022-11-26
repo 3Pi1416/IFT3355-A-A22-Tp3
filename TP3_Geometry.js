@@ -111,6 +111,16 @@ TP3.Geometry = {
 			let point1 = new THREE.Vector3(radius * vectorTangente.y, - radius * vectorTangente.x, 0);
 			let point2 = new THREE.Vector3().crossVectors(vectorTangente, point1).normalize().multiplyScalar(radius);
 
+			// if (vectorTangente.x > 0.75) {
+			// 	point2 = new THREE.Vector3(0, radius * vectorTangente.z, - radius * vectorTangente.y);
+			// 	point1 = new THREE.Vector3().crossVectors(vectorTangente, point1).normalize().multiplyScalar(radius);
+			// }
+
+			// if (vectorTangente.y > 0.75) {
+			// 	point1 = new THREE.Vector3(radius * vectorTangente.z, 0, - radius * vectorTangente.x);
+			// 	point2 = new THREE.Vector3().crossVectors(vectorTangente, point1).normalize().multiplyScalar(radius);
+			// }
+
 			if (point1.x < 0) {
 				point1 = new THREE.Vector3(-point1.x, -point1.y, 0);
 			}
