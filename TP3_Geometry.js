@@ -69,8 +69,8 @@ TP3.Geometry = {
 		rootNode.sections = []
 
 
-		let degree = 2 * Math.PI / radialDivisions;
-		for (let i = 0; i <= lengthDivisions - 1; i++) {
+		let degree = 2 * Math.PI / (radialDivisions);
+		for (let i = 0; i < lengthDivisions; i++) {
 			let t = i / (lengthDivisions - 1);
 
 			let hermitePoint = this.hermite(rootNode.p0, rootNode.p1, rootNode.v0, rootNode.v1, t)
@@ -79,28 +79,79 @@ TP3.Geometry = {
 
 			// let centralPoint = hermitePoint[0];
 			// let vectorTangente = hermitePoint[1].normalize();
-
 			let centralPoint = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.p0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.p1, t));
 			let vectorTangente = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.v0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.v1, t));
 			vectorTangente.normalize();
 
-			let point = new THREE.Vector3(radius, 0, 0);
-			if (vectorTangente.y != 0) {
-				//calculer les angles pour la rotation des branche 
-				let rho = Math.PI / 2 - Math.asin(vectorTangente.y);
-				if (vectorTangente.z < 0) {
-					rho = rho - 2 * Math.PI;
-				}
-				// point = new THREE.Vector3(Math.abs(radius * Math.cos(rho)), radius * Math.sin(rho), 0);
-				point = new THREE.Vector3(radius * (1 - Math.sin(rho)), radius * Math.sin(rho), 0);
 
+			// change le direction de la normal afin de garder un sens au branche 	
+			if (vectorTangente.x > 0) {
+				vectorTangente.x = - vectorTangente.x;
+				vectorTangente.y = - vectorTangente.y;
+				vectorTangente.z = - vectorTangente.z;
 			}
 
+
+
+			// //calculer les angles pour la rotation des branche 
+			// let theta = Math.atan2(vectorTangente.x, vectorTangente.z);
+			// if (vectorTangente.z < 0) {
+			// 	theta = theta - 2 * Math.PI;
+			// }
+
+			// let rho = Math.asin(vectorTangente.y);
+			// if ((vectorTangente.x < 0 && vectorTangente.y > 0)) {
+			// 	rho = rho - 2 * Math.PI;
+			// }
+
+
+
 			let arrayPoint = []
+			// calculer les 2 vecteur orthogonaux à la normal, mais de facon contrôler ( direction de base en x)
+			let point1 = new THREE.Vector3(radius * vectorTangente.y, - radius * vectorTangente.x, 0);
+			let point2 = new THREE.Vector3().crossVectors(vectorTangente, point1).normalize().multiplyScalar(radius);
+
+			if (point1.x < 0) {
+				point1 = new THREE.Vector3(-point1.x, -point1.y, 0);
+			}
+
+			if (point2.z < 0) {
+				point2 = new THREE.Vector3(0, -point2.y, -point2.z);
+			}
+			if (vectorTangente.x > 0.999) {
+				point1 = new THREE.Vector3(0, radius, 0);
+				point2 = new THREE.Vector3(0, 0, radius);
+
+			}
+			if (vectorTangente.z > 0.999) {
+				point1 = new THREE.Vector3(radius, 0, 0);
+				point2 = new THREE.Vector3(0, radius, 0);
+
+			}
+			if (vectorTangente.y > 0.999) {
+				point1 = new THREE.Vector3(radius, 0, 0);
+				point2 = new THREE.Vector3(0, 0, radius);
+
+			}
 			for (let j = 0; j < radialDivisions + 1; j++) {
+				// créer le point de base en utilisant en utilisant l'opposé en x, z de la tangente
+				// let point = new THREE.Vector3(radius, 0, 0);
+				let a = Math.cos(j * degree);
+				let b = Math.sin(j * degree);
+				let point = new THREE.Vector3(point1.x * a + point2.x * b, point1.y * a + point2.y * b, point1.z * a + point2.z * b);
+				// let point = new THREE.Vector3(hypothenuseXZ * Math.cos(rotation), radius * Math.sin(rho) * Math.cos(rotation + theta), hypothenuseXZ * Math.sin(rotation));
+
+				// let matrixRotation = new THREE.Matrix4().makeRotationY(degree * j)
+				// let rotationAxisXinZ = new THREE.Matrix4().makeRotationZ(rho)
+				// let rotationAxisXinY = new THREE.Matrix4().makeRotationY(theta)
+
+				// point.applyMatrix4(rotationAxisXinY)
+				// point.applyMatrix4(rotationAxisXinZ)
+				// point.applyMatrix4(matrixRotation)
+
 				let newPoint = new THREE.Vector3(point.x + centralPoint.x, point.y + centralPoint.y, point.z + centralPoint.z)
 				arrayPoint.push(newPoint)
-				point.applyAxisAngle(vectorTangente, degree);
+
 			}
 			rootNode.sections.push(arrayPoint)
 		}
@@ -108,7 +159,13 @@ TP3.Geometry = {
 
 		if (numberOfChild >= 1) {
 			{
+
+
 				rootNode.childNode.forEach(node => {
+
+					if (node.a1 / node.parentNode.a1 > 1.001) {
+						console.log(node.a1 / node.parentNode.a1)
+					}
 					this.generateSegmentsHermite(node, lengthDivisions, radialDivisions);
 				});
 			}
