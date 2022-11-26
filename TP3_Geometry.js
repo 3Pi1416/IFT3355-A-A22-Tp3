@@ -77,11 +77,11 @@ TP3.Geometry = {
 
 			let radius = rootNode.a0 * (1 - t) + rootNode.a1 * t;
 
-			// let centralPoint = hermitePoint[0];
-			// let vectorTangente = hermitePoint[1].normalize();
-			let centralPoint = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.p0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.p1, t));
-			let vectorTangente = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.v0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.v1, t));
-			vectorTangente.normalize();
+			let centralPoint = hermitePoint[0];
+			let vectorTangente = hermitePoint[1].normalize();
+			// let centralPoint = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.p0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.p1, t));
+			// let vectorTangente = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.v0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.v1, t));
+			// vectorTangente.normalize();
 
 
 			// change le direction de la normal afin de garder un sens au branche 	
@@ -108,8 +108,12 @@ TP3.Geometry = {
 
 			let arrayPoint = []
 			// calculer les 2 vecteur orthogonaux à la normal, mais de facon contrôler ( direction de base en x)
-			let point1 = new THREE.Vector3(radius * vectorTangente.y, - radius * vectorTangente.x, 0);
-			let point2 = new THREE.Vector3().crossVectors(vectorTangente, point1).normalize().multiplyScalar(radius);
+			let point1 = new THREE.Vector3(vectorTangente.y, -  vectorTangente.x, 0);
+			point1.normalize();
+			point1.multiplyScalar(radius);
+			let point2 = new THREE.Vector3().crossVectors(point1, vectorTangente);
+			point2.normalize();
+			point2.multiplyScalar(radius);
 
 			// if (vectorTangente.x > 0.75) {
 			// 	point2 = new THREE.Vector3(0, radius * vectorTangente.z, - radius * vectorTangente.y);
