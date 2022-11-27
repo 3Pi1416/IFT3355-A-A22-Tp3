@@ -62,56 +62,77 @@ TP3.Physics = {
 		let newPosition = new THREE.Vector3();
 		let pt = node.vel.clone();
 		pt.multiplyScalar(dt);
-		newPosition.addVectors(original_p1, c_velocity.multiplyScalar(dt));
+		newPosition.addVectors(original_p1, pt);
 
-		console.log(dt);
-		console.log(original_p1);
-		console.log(original_p0);
-		console.log(newPosition);
-		console.log(c_velocity);
-		console.log(pt);
+		// console.log(dt);
+		// console.log(original_p1);
+		// console.log(original_p0);
+		// console.log(newPosition);
+		// console.log(c_velocity);
+		// console.log(pt);
 
 
-		// let a = newPosition.sub(original_p0).normalize();
-		// let b = original_p1.sub(original_p0).normalize();
-		// let aCrossB = a.cross(b).normalize();
-		// let q = new THREE.Quaternion(1, 1, 1, 1);
-		//
-		// // console.log(a);
-		// // console.log(b);
-		//
-		// // cas où les vecteurs sont dans direction opposé
-		// if (a.equals(-b)) {
-		// 	q.setFromAxisAngle(aCrossB, 0);
-		// }
-		//
-		// let half = a.add(b).normalize();
-		// let aCrossHalf = a.cross(half);
-		// let s = a.dot(half);
-		// q.setFromAxisAngle(aCrossHalf, s);
-		//
-		// let r = new THREE.Matrix4();
-		// r.makeRotationFromQuaternion(q);
-		//
-		// //console.log(r);
-		//
-		// node.rotation= r.clone();
-		//
-		// let rotatedP1 = r.scale(original_p1);
-		// let current_velocity = node.vel.clone();
-		// node.vel = current_velocity.applyMatrix4(r);
-		//
-		// // calculer angle entre direction initiale et direction courrante
-		// let init_dir = new THREE.Vector3();
-		// init_dir.subVectors(original_p1, original_p0);
-		//
-		// let current_dir = new THREE.Vector3();
-		// current_dir.subVectors(rotatedP1, original_p0);
-		// let cross = init_dir.cross(current_dir);
-		// let angle = Math.asin(cross.length() / (init_dir.length() * current_dir.length()));
-		//
-		// current_velocity = node.vel.clone();
-		// let restitution = current_velocity.multiply(current_velocity).multiplyScalar(-1);
+		let a = new THREE.Vector3();
+		a.subVectors(newPosition, original_p0).normalize();
+		let b = new THREE.Vector3();
+		b.subVectors(original_p1, original_p0).normalize();
+		let aCrossB = a.clone();
+		aCrossB.cross(b).normalize();
+		let q = new THREE.Quaternion(1, 1, 1, 1);
+
+		// console.log(newPosition);
+		// console.log(a);
+		// console.log(b);
+		// console.log(aCrossB);
+
+		// cas où les vecteurs sont dans direction opposé
+		if (a.equals(-b)) {
+			q.setFromAxisAngle(aCrossB, 0);
+		}
+
+		let half = new THREE.Vector3();
+		half.addVectors(a, b).normalize();
+		let aCrossHalf = new THREE.Vector3();
+		aCrossHalf.crossVectors(a, half);
+		let s = a.dot(half);
+		q.setFromAxisAngle(aCrossHalf, s);
+
+		// la matrice de rotation
+		let r = new THREE.Matrix4();
+		r.makeRotationFromQuaternion(q);
+
+		//console.log(r);
+
+		node.rotation= r.clone();
+
+
+		let rotatedP1 = original_p1.clone();
+		rotatedP1.applyMatrix4(r);
+		let current_velocity = node.vel.clone();
+		node.vel = current_velocity.applyMatrix4(r);
+
+		// calculer angle entre direction initiale et direction courrante
+		let init_dir = new THREE.Vector3();
+		init_dir.subVectors(original_p1, original_p0);
+
+		let current_dir = new THREE.Vector3();
+		current_dir.subVectors(rotatedP1, original_p0);
+		let cross = new THREE.Vector3();
+		cross.crossVectors(init_dir, current_dir);
+		let angle = Math.asin(cross.length() / (init_dir.length() * current_dir.length()));
+
+		// ajouter la force de restitution
+		current_velocity = node.vel.clone();
+		console.log(current_velocity);
+
+		let restitution = current_velocity;
+		restitution.multiply(current_velocity);
+		restitution.multiplyScalar(-1);
+
+		console.log(restitution);
+
+		// facteur d'amortissement
+		node.vel.multiplyScalar(0.7);
 
 
 
