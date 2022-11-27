@@ -10,7 +10,13 @@ class Node {
 		this.a0 = null; //Rayon de la branche a p0
 		this.a1 = null; //Rayon de la branche a p1
 
+		this.v0 = null;
+		this.v1 = null;
+
+		this.rotation = null;
+
 		this.sections = null; //Liste contenant une liste de points representant les segments circulaires du cylindre generalise
+		this.points = null;
 	}
 }
 
