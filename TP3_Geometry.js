@@ -13,6 +13,8 @@ class Node {
 		this.v0 = null;
 		this.v1 = null;
 
+		this.rotation = null;
+
 		this.sections = null; //Liste contenant une liste de points representant les segments circulaires du cylindre generalise
 		this.points = null;
 	}
@@ -88,7 +90,7 @@ TP3.Geometry = {
 			// vectorTangente.normalize();
 
 
-			// change le direction de la normal afin de garder un sens au branche 	
+			// change le direction de la normal afin de garder un sens au branche
 			// if (vectorTangente.x > 0) {
 			// 	vectorTangente.x = - vectorTangente.x;
 			// 	vectorTangente.y = - vectorTangente.y;
@@ -97,7 +99,7 @@ TP3.Geometry = {
 
 
 
-			//calculer les angles pour la rotation des branche 
+			//calculer les angles pour la rotation des branche
 
 
 
