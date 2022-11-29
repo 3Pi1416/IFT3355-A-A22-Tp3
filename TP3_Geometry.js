@@ -13,7 +13,7 @@ class Node {
 		this.v0 = null;
 		this.v1 = null;
 
-		this.rotation = null;
+		this.transformation = null;
 
 		this.sections = null; //Liste contenant une liste de points representant les segments circulaires du cylindre generalise
 		this.points = null;
