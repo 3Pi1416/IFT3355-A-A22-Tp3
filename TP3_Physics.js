@@ -136,7 +136,17 @@ TP3.Physics = {
     let rotatedP1 = original_p1.clone();
     rotatedP1.applyMatrix4(r);
     let current_velocity = node.vel.clone();
-    node.vel = current_velocity.applyMatrix4(r).multiplyScalar(dt);
+    // node.vel = current_velocity.applyMatrix4(r).multiplyScalar(dt);
+    current_velocity.applyMatrix4(r).multiplyScalar(dt);
+
+
+    let resx = -current_velocity.x;
+    let resy = 0;
+    let resz = -current_velocity.z;
+    node.vel = current_velocity.clone();
+    // let vectGuideVelocity = new THREE.Vector3();
+    // vectGuideVelocity.set(-1, 0, 1);
+    // node.vel.multiply(vectGuideVelocity);
 
     // trouver la nouvelle position en fonction du temps
     let rotatedNewPosition = new THREE.Vector3();
@@ -187,17 +197,17 @@ TP3.Physics = {
     // console.log(node.a0);
     // restitution.multiply(current_velocity);
     // restitution.multiplyScalar(node.a0 * 1000);
-	  let resx = current_velocity.x;
-    let resy = current_velocity.y;
-    let resz = current_velocity.z;
+	  // let resx = -current_velocity.x;
+    // let resy = 0;
+    // let resz = -current_velocity.z;
 
     let restitution = new THREE.Vector3();
-    restitution.set(Math.pow(resx, 2), Math.pow(resy, 2), Math.pow(resz, 2));
+    restitution.set(Math.pow(resx, 2), 0, Math.pow(resz, 2));
     restitution.multiplyScalar(dt);
 
     let ammort = node.a0 * 1000;
     restitution.multiplyScalar(ammort);
-    restitution.applyMatrix4(restMatrix);
+    // restitution.applyMatrix4(restMatrix);
 
     // console.log(restitution);
 
