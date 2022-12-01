@@ -80,14 +80,16 @@ TP3.Physics = {
       // console.log(oldP0);
       // console.log(newP0);
       // console.log(movementVector);
-       let newP1 = new THREE.Vector3();
+      let newP1 = new THREE.Vector3();
       // newP1.addVectors(node.p1.clone(), movementVector);
-		newP1 = node.p1.clone();
+      newP1 = node.p1.clone();
 
       newP1.applyMatrix4(node.transformation);
 
       node.p0 = newP0.clone();
       node.p1 = newP1.clone();
+      // node.p0.copy(newP0);
+      // node.p1.copy(newP1);
     }
 
     // get quaternion
@@ -97,7 +99,6 @@ TP3.Physics = {
     let pt = node.vel.clone();
     pt.multiplyScalar(dt);
     newPosition.addVectors(original_p1, pt);
-	
 
     // console.log(dt);
     // console.log(original_p1);
@@ -116,7 +117,8 @@ TP3.Physics = {
     let n = aCrossB.clone();
     n.normalize();
     let aDotB = a.dot(b);
-    let angleAB = Math.atan(aCrossB.length() / aDotB);
+    // let angleAB = Math.atan(aCrossB.length() / aDotB);
+    let angleAB = a.angleTo(b);
 
     // console.log(aCrossB);
     // console.log(n);
@@ -139,9 +141,8 @@ TP3.Physics = {
     // node.vel = current_velocity.applyMatrix4(r).multiplyScalar(dt);
     current_velocity.applyMatrix4(r).multiplyScalar(dt);
 
-
     let resx = -current_velocity.x;
-    let resy = 0;
+    let resy = -current_velocity.y;
     let resz = -current_velocity.z;
     node.vel = current_velocity.clone();
     // let vectGuideVelocity = new THREE.Vector3();
@@ -153,7 +154,7 @@ TP3.Physics = {
     let pt2 = node.vel.clone();
     pt2.multiplyScalar(dt);
     rotatedNewPosition.addVectors(rotatedP1, pt2);
-	// rotatedNewPosition.multiplyVectors(rotatedP1, pt2);
+    // rotatedNewPosition.multiplyVectors(rotatedP1, pt2);
 
     // trouver l'angle
     let init_dir = new THREE.Vector3();
@@ -165,17 +166,19 @@ TP3.Physics = {
     let currentCrossInit = new THREE.Vector3();
     currentCrossInit.crossVectors(current_dir, init_dir).normalize();
 
-	let currentDotInit = current_dir.dot(init_dir);
-	//   let currentDotInit = current_dir.distanceTo(init_dir);
+    let currentDotInit = current_dir.dot(init_dir);
+    // let currentDotInit = current_dir.angleTo(init_dir);
+    // let currentDotInit = init_dir.angleTo(current_dir);
 
     let n2 = currentCrossInit.clone();
-	  n2.normalize();
-	  
-	//   let vectC = new THREE.Vector3();
+    n2.normalize();
+
+    //   let vectC = new THREE.Vector3();
     // vectC.addVectors(init_dir, current_dir);
 
-    let angle = Math.atan(currentCrossInit.length() / currentDotInit);
-	// let angle = Math.atan(vectC.length() / currentDotInit);
+    // let angle = Math.atan(currentCrossInit.length() / currentDotInit);
+    let angle = current_dir.angleTo(init_dir);
+    // let angle = init_dir.angleTo(current_dir);
     let q1 = new THREE.Quaternion();
     q1.setFromAxisAngle(n2, angle);
 
@@ -197,56 +200,58 @@ TP3.Physics = {
     // console.log(node.a0);
     // restitution.multiply(current_velocity);
     // restitution.multiplyScalar(node.a0 * 1000);
-	  // let resx = -current_velocity.x;
+    // let resx = -current_velocity.x;
     // let resy = 0;
     // let resz = -current_velocity.z;
 
     let restitution = new THREE.Vector3();
-    restitution.set(Math.pow(resx, 2), 0, Math.pow(resz, 2));
-    restitution.multiplyScalar(dt);
+    // restitution.set(Math.pow(resx, 2), 0, Math.pow(resz, 2));
+    restitution.set(Math.pow(resx, 2), Math.pow(resy, 2), Math.pow(resz, 2));
 
     let ammort = node.a0 * 1000;
     restitution.multiplyScalar(ammort);
     // restitution.applyMatrix4(restMatrix);
-
+    restitution.multiplyScalar(dt);
     // console.log(restitution);
 
-	  node.vel.add(restitution);
-	  
-	//  node.vel.multiplyScalar(dt);
+    node.vel.add(restitution);
+
+    //  node.vel.multiplyScalar(dt);
     // facteur d'amortissement
     node.vel.multiplyScalar(0.7);
 
     node.p1 = rotatedNewPosition.clone();
 
     let delta = new THREE.Vector3();
-    delta.subVectors(rotatedNewPosition, original_p1);
+    // delta.subVectors(rotatedNewPosition, original_p1);
+    delta.subVectors(rotatedP1, rotatedNewPosition);
+    // delta.subVectors(rotatedNewPosition, original_p1);
 
-	  let transformation = new THREE.Matrix4();
-    transformation.set(
-      1,
-      0,
-      0,
-      delta.getComponent(0),
-      0,
-      1,
-      0,
-      delta.getComponent(1),
-      0,
-      0,
-      1,
-      delta.getComponent(2),
-      0,
-      0,
-      0,
-      1
-    );
     // let transformation = new THREE.Matrix4();
-    // transformation.makeTranslation(
+    // transformation.set(
+    //   1,
+    //   0,
+    //   0,
     //   delta.getComponent(0),
+    //   0,
+    //   1,
+    //   0,
     //   delta.getComponent(1),
-    //   delta.getComponent(2)
+    //   0,
+    //   0,
+    //   1,
+    //   delta.getComponent(2),
+    //   0,
+    //   0,
+    //   0,
+    //   1
     // );
+    let transformation = new THREE.Matrix4();
+    transformation.makeTranslation(
+      delta.getComponent(0),
+      delta.getComponent(1),
+      delta.getComponent(2)
+    );
 
     // Appel recursif sur les enfants
     for (var i = 0; i < node.childNode.length; i++) {
