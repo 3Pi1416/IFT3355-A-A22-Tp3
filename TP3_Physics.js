@@ -47,10 +47,10 @@ TP3.Physics = {
     v += Math.cos(5 * time + 56485) * 0.4;
 
     // Ajouter le vent
-    // node.vel.add(new THREE.Vector3(u / Math.sqrt(node.mass), 0, v / Math.sqrt(node.mass)).multiplyScalar(dt));
+    node.vel.add(new THREE.Vector3(u / Math.sqrt(node.mass), 0, v / Math.sqrt(node.mass)).multiplyScalar(dt));
 
     // Ajouter la gravite
-    node.vel.add(new THREE.Vector3(0, -node.mass, 0).multiplyScalar(dt));
+    // node.vel.add(new THREE.Vector3(0, -node.mass, 0).multiplyScalar(dt));
 
 
     // TODO: Projection du mouvement, force de restitution et amortissement de la velocite
@@ -75,14 +75,11 @@ TP3.Physics = {
     let nonConservedP1 = new THREE.Vector3().addVectors(moveP1, movement);
 
     // calculer l'angle causé par le mouvement
-    let initialDirection = new THREE.Vector3().subVectors(originalP1, originalP0).normalize();
+    let initialDirection = new THREE.Vector3().subVectors(moveP1, originalP0).normalize();
     let nonConservedDirection = new THREE.Vector3().subVectors(nonConservedP1, originalP0).normalize();
-    let intialCrossNonConserved = initialDirection.clone().cross(nonConservedDirection).normalize();
+    let intialCrossNonConserved = initialDirection.clone().cross(nonConservedDirection);
     let angleIntialNonConserved = initialDirection.angleTo(nonConservedDirection);
 
-    if( angleCurrentInitial == 0 ){
-      console.log(angleCurrentInitial)
-    }
 
 
     // Appliquer l'angle de rotation sur la branche initial pour garder la taille de celle-ci
@@ -92,7 +89,7 @@ TP3.Physics = {
     // la matrice de rotation
     let matrixRotation = new THREE.Matrix4().makeRotationFromQuaternion(quaternionRotation);
 
-    let vectorBranch = new THREE.Vector3().subVectors(originalP1, originalP0)
+    let vectorBranch = new THREE.Vector3().subVectors(moveP1, originalP0)
     let trueNewP1 = vectorBranch.clone().applyMatrix4(matrixRotation);
     trueNewP1.add(originalP0);
 
@@ -102,7 +99,8 @@ TP3.Physics = {
     let currentDirection = new THREE.Vector3().subVectors(trueNewP1, originalP0).normalize();
     let currentCrossInitial = new THREE.Vector3().crossVectors(currentDirection, initialDirection);
     let angleCurrentInitial = initialDirection.angleTo(currentDirection);
-    //Met en % car un angle plus grand que 1 au carré pourrait causé problème
+
+    // Met en % car un angle plus grand que 1 au carré pourrait causé problème
     if (Math.abs(angleCurrentInitial) > 1) {
       console.log(angleCurrentInitial)
     }
@@ -112,7 +110,7 @@ TP3.Physics = {
     // peut besoin de prendre l'angle en %, sinon problème quand l'angle > 1 
 
 
-    let q2 = new THREE.Quaternion().setFromAxisAngle(currentCrossInitial, angleSquared);
+    let q2 = new THREE.Quaternion().setFromAxisAngle(currentCrossInitial, -angleSquared);
     let r2 = new THREE.Matrix4().makeRotationFromQuaternion(q2);
     let pT = vectorBranch.clone().applyMatrix4(r2);
     pT.add(originalP0);
@@ -130,8 +128,8 @@ TP3.Physics = {
     node.transformation = node.transformation.add(node.vel.clone().multiplyScalar(dt));
     node.transformationParenthood = node.transformation.clone();
 
-    node.p1 = originalP1.clone().add(node.transformation);
-    node.p0 = originalP0;
+    node.p1 = node.p1Initial.clone().add(node.transformation);
+    node.p0 = node.p0Initial.clone();
     if (node.parentNode != null) {
       node.transformationParenthood.add(node.parentNode.transformationParenthood)
       node.p1.add(node.parentNode.transformationParenthood);
