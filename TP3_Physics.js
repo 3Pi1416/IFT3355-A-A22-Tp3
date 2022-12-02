@@ -47,11 +47,11 @@ TP3.Physics = {
     v += Math.cos(5 * time + 56485) * 0.4;
 
     // Ajouter le vent
-    node.vel.add(new THREE.Vector3(u / Math.sqrt(node.mass), 0, v / Math.sqrt(node.mass)).multiplyScalar(dt));
+    // node.vel.add(new THREE.Vector3(u / Math.sqrt(node.mass), 0, v / Math.sqrt(node.mass)).multiplyScalar(dt));
 
     // Ajouter la gravite
     node.vel.add(new THREE.Vector3(0, -node.mass, 0).multiplyScalar(dt));
-    // node.vel.add(new THREE.Vector3(0, 0, 0).multiplyScalar(dt));
+
 
     // TODO: Projection du mouvement, force de restitution et amortissement de la velocite
 
@@ -80,6 +80,9 @@ TP3.Physics = {
     let intialCrossNonConserved = initialDirection.clone().cross(nonConservedDirection).normalize();
     let angleIntialNonConserved = initialDirection.angleTo(nonConservedDirection);
 
+    if( angleCurrentInitial == 0 ){
+      console.log(angleCurrentInitial)
+    }
 
 
     // Appliquer l'angle de rotation sur la branche initial pour garder la taille de celle-ci
@@ -94,11 +97,15 @@ TP3.Physics = {
     trueNewP1.add(originalP0);
 
     // Calculer la vrai vélocité causé par l'Angle
-    node.vel = new THREE.Vector3().subVectors(trueNewP1, moveP1);
+    node.vel = new THREE.Vector3().subVectors(trueNewP1, moveP1).add(node.vel);
 
-    let currentDirection = new THREE.Vector3().subVectors(trueNewP1, originalP0);
+    let currentDirection = new THREE.Vector3().subVectors(trueNewP1, originalP0).normalize();
     let currentCrossInitial = new THREE.Vector3().crossVectors(currentDirection, initialDirection);
     let angleCurrentInitial = initialDirection.angleTo(currentDirection);
+    //Met en % car un angle plus grand que 1 au carré pourrait causé problème
+    if (Math.abs(angleCurrentInitial) > 1) {
+      console.log(angleCurrentInitial)
+    }
     let angleSquared = Math.pow(angleCurrentInitial, 2);
 
 
@@ -121,15 +128,17 @@ TP3.Physics = {
     node.vel.multiplyScalar(0.7);
 
     node.transformation = node.transformation.add(node.vel.clone().multiplyScalar(dt));
-    node.transformationParenthood = node.transformation.clone()
+    node.transformationParenthood = node.transformation.clone();
 
     node.p1 = originalP1.clone().add(node.transformation);
+    node.p0 = originalP0;
     if (node.parentNode != null) {
       node.transformationParenthood.add(node.parentNode.transformationParenthood)
       node.p1.add(node.parentNode.transformationParenthood);
+      node.p0.add(node.parentNode.transformationParenthood);
     }
 
-    node.p0 = originalP0;
+
     // Appel recursif sur les enfants
     node.childNode.forEach(childNode => {
       this.applyForces(childNode, dt, time);
