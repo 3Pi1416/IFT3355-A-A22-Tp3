@@ -285,7 +285,35 @@ TP3.Render = {
 
 	updateTreeHermite: function (trunkGeometryBuffer, leavesGeometryBuffer, applesGeometryBuffer, rootNode) {
 
-		//TODO
+		if (rootNode.endArrayBranches > -1) {
+			for (points = rootNode.beginningArrayBranches; points <= rootNode.endArrayBranches; point++) {
+				trunkGeometryBuffer[points * 3] = trunkGeometryBuffer[points * 3] + rootNode.transformationParenthood.x;
+				trunkGeometryBuffer[points * 3 + 1] = trunkGeometryBuffer[points * 3 + 1] + rootNode.transformationParenthood.y;
+				trunkGeometryBuffer[points * 3 + 2] = trunkGeometryBuffer[points * 3 + 2] + rootNode.transformationParenthood.z;
+			}
+		}
+
+		if (rootNode.endArrayleaves > -1) {
+			for (points = rootNode.beginningArrayleaves; points <= rootNode.endArrayleaves; point++) {
+				leavesGeometryBuffer[points * 3] = leavesGeometryBuffer[points * 3] + rootNode.transformationParenthood.x
+				leavesGeometryBuffer[points * 3 + 1] = leavesGeometryBuffer[points * 3 + 1] + rootNode.transformationParenthood.y
+				leavesGeometryBuffer[points * 3 + 2] = leavesGeometryBuffer[points * 3 + 2] + rootNode.transformationParenthood.z
+			}
+
+		}
+
+		if (rootNode.endArrayApples > -1) {
+			for (points = rootNode.beginningArrayApples; points <= rootNode.endArrayApples; point++) {
+				applesGeometryBuffer[points * 3] = applesGeometryBuffer[points * 3] + rootNode.transformationParenthood.x
+				applesGeometryBuffer[points * 3 + 1] = applesGeometryBuffer[points * 3 + 1] + rootNode.transformationParenthood.y
+				applesGeometryBuffer[points * 3 + 2] = applesGeometryBuffer[points * 3 + 2] + rootNode.transformationParenthood.z
+			}
+		}
+
+		rootNode.childNode.forEach(child => {
+			this.drawTreeHermite(trunkGeometryBuffer, leavesGeometryBuffer, applesGeometryBuffer, child)
+		});
+
 	},
 
 	drawTreeSkeleton: function (rootNode, scene, color = 0xffffff, matrix = new THREE.Matrix4()) {
