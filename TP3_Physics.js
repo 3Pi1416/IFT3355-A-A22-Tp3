@@ -89,15 +89,12 @@ TP3.Physics = {
     // La force de rappel est comme une force de springs f = -k(distance)
     // frequence = (1/2 pi)*sqrt(k/m)
     var k = (node.a0 * 1000) * -1;
-    var distance = new THREE.Vector3()
-      .addVectors(nonConservedP1, moveP1)
-      .normalize();
+    var distance = new THREE.Vector3().addVectors(nonConservedP1, moveP1);
     distance.multiplyScalar(dt);
     // let rx = k * distance.x;
     // let ry = -1 * node.vel.y;
     // let rz = k * distance.z;
     let restitution = new THREE.Vector3();
-    restitution.set(1, 1, 1);
     restitution.multiply(distance.multiplyScalar(k));
     node.vel.add(restitution);
 
@@ -113,8 +110,7 @@ TP3.Physics = {
     //  -A + B = vecteur entre init. et nonC. )
     // let intialCrossNonConserved = new THREE.Vector3().addVectors(initialDirection.multiplyScalar(-1), nonConservedDirection).normalize();
     let intialCrossNonConserved = new THREE.Vector3()
-      .addVectors(initialDirection, nonConservedDirection)
-      .normalize();
+      .addVectors(initialDirection, nonConservedDirection);
     // let intialCrossNonConserved = initialDirection.clone().cross(nonConservedP1).normalize();
     let angleIntialNonConserved = intialCrossNonConserved.angleTo(
       nonConservedDirection
