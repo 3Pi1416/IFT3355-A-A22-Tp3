@@ -43,6 +43,7 @@
 
 			var timeS = (new Date().getTime()) / 1000;
 			TP3.Physics.applyForces(nodeTree, dt, timeS);
+			console.log(trunkGeom.attributes.position.array)
 			TP3.Render.updateTreeHermite(trunkGeom.attributes.position.array, leavesGeom.attributes.position.array, applesGeom.attributes.position.array, nodeTree);
 			trunkGeom.attributes.position.needsUpdate = true;
 			leavesGeom.attributes.position.needsUpdate = true;
