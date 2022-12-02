@@ -81,7 +81,7 @@ TP3.Physics = {
     let movement = node.vel.clone();
 
     //appliquer le mouvement sans conserver la longueur de la branche
-    let nonConservedP1 = new THREE.Vector3().addVectors(moveP1, movement);
+    let nonConservedP1 = new THREE.Vector3().subVectors(moveP1, movement);
     // let nonConservedP1 = new THREE.Vector3().multiply(moveP1, movement);
 
     //Comme le mouvement varie dans le temps, on aplique la variable dt
@@ -89,9 +89,15 @@ TP3.Physics = {
     // La force de rappel est comme une force de springs f = -k(distance)
     // frequence = (1/2 pi)*sqrt(k/m)
     var k = (node.a0 * 1000) * -1;
-    var distance = new THREE.Vector3().subVectors(nonConservedP1, moveP1);
+    var distance = new THREE.Vector3()
+      .addVectors(nonConservedP1, moveP1)
+      .normalize();
     distance.multiplyScalar(dt);
+    // let rx = k * distance.x;
+    // let ry = -1 * node.vel.y;
+    // let rz = k * distance.z;
     let restitution = new THREE.Vector3();
+    restitution.set(1, 1, 1);
     restitution.multiply(distance.multiplyScalar(k));
     node.vel.add(restitution);
 
@@ -129,7 +135,7 @@ TP3.Physics = {
     vectorBranch = new THREE.Vector3().subVectors(originalP1, originalP0);
     
     let trueNewP1 = vectorBranch.clone().applyMatrix4(matrixRotation);
-    trueNewP1.add(originalP0);
+    // trueNewP1.add(originalP0);
 
     // Ici vous overwritez la velocité?
     // Calculer la vrai vélocité causé par l'Angle
@@ -193,9 +199,7 @@ TP3.Physics = {
     // facteur d'amortissement
     node.vel.multiplyScalar(0.7);
 
-    node.transformation = node.transformation.add(
-      node.vel.clone().multiplyScalar(dt)
-    );
+    node.transformation = node.vel.clone().multiplyScalar(dt);
     node.transformationParenthood = node.transformation.clone();
 
     node.p1 = node.p1Initial.clone().add(node.transformation);
