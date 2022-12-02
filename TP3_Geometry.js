@@ -4,6 +4,9 @@ class Node {
 		this.parentNode = parentNode; //Noeud parent
 		this.childNode = []; //Noeud enfants
 
+		this.p0Initial = null; //Position de depart de la branche
+		this.p1Initial = null; //Position finale de la branche
+
 		this.p0 = null; //Position de depart de la branche
 		this.p1 = null; //Position finale de la branche
 
@@ -13,7 +16,8 @@ class Node {
 		this.v0 = null;
 		this.v1 = null;
 
-		this.transformation = null; //Matrice de transformation
+		this.transformation = new THREE.Vector3(0, 0, 0); //Matrice de transformation
+		this.transformationParenthood = new THREE.Vector3(0, 0, 0);
 
 		this.sections = null; //Liste contenant une liste de points representant les segments circulaires du cylindre generalise
 		this.points = null;
@@ -41,6 +45,8 @@ TP3.Geometry = {
 					node.parentNode = rootNode;
 				});
 				this.simplifySkeleton(rootNode, rotationThreshold);
+				rootNode.p1Initial = rootNode.p1;
+				rootNode.p0Initial = rootNode.p0;
 				return rootNode
 			}
 
@@ -53,7 +59,8 @@ TP3.Geometry = {
 				});
 			}
 		}
-
+		rootNode.p1Initial = rootNode.p1;
+		rootNode.p0Initial = rootNode.p0;
 		return rootNode
 	},
 

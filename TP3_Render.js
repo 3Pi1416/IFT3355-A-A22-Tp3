@@ -28,10 +28,9 @@ TP3.Render = {
 		}
 
 		//appliquer la rotation a des matrice 
-		let matrixRotationX = new THREE.Matrix4();
-		let matrixRotationY = new THREE.Matrix4();
-		matrixRotationY.makeRotationY(teta)
-		matrixRotationX.makeRotationX(rho)
+		let matrixRotationX = new THREE.Matrix4().makeRotationX(rho);
+		let matrixRotationY = new THREE.Matrix4().makeRotationY(teta);
+
 		let matrixRotationBase = new THREE.Matrix4().multiplyMatrices(matrixRotationY, matrixRotationX);
 
 
