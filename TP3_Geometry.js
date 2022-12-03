@@ -22,10 +22,10 @@ class Node {
 		this.sections = null; //Liste contenant une liste de points representant les segments circulaires du cylindre generalise
 		this.points = null;
 
-		this.vel = new THREE.Vector3(0,0,0); // initialisation de la  vitesse 
+		this.vel = new THREE.Vector3(0, 0, 0); // initialisation de la  vitesse 
 
 		//information sur les points utiliser pour faire les objets 
-		this.beginningArrayBranches = -1; 
+		this.beginningArrayBranches = -1;
 		this.endArrayBranches = -1
 
 		this.beginningArrayApples = -1;
@@ -43,21 +43,23 @@ TP3.Geometry = {
 	simplifySkeleton: function (rootNode, rotationThreshold = 0.0001) {
 		let numberOfChild = rootNode.childNode.length;
 
-
+		//cas ou seulement un enfant existe
 		if (numberOfChild == 1 && rootNode.childNode[0] != null) {
 			let child = rootNode.childNode[0];
-			let vectorChild = new THREE.Vector3()
-			vectorChild.subVectors(child.p1, child.p0);
-			let vectorParent = new THREE.Vector3()
-			vectorParent.subVectors(rootNode.p1, rootNode.p0);
+			//trouverl'angle du parent et de 
+			let vectorChild = new THREE.Vector3().subVectors(child.p1, child.p0);
+			let vectorParent = new THREE.Vector3().subVectors(rootNode.p1, rootNode.p0);
 
+			// calculer l'angle entre les deux vecteurs et s'assurer qu'il ne dépense pas le threshold
 			if (Math.abs(vectorChild.angleTo(vectorParent) < rotationThreshold)) {
+				//detuire l'enfant 
 				rootNode.p1 = child.p1;
 				rootNode.a1 = child.a1;
 				rootNode.childNode = child.childNode;
 				rootNode.childNode.forEach(node => {
 					node.parentNode = rootNode;
 				});
+				//continuerle processus sur la même branche 
 				this.simplifySkeleton(rootNode, rotationThreshold);
 				rootNode.p1Initial = rootNode.p1;
 				rootNode.p0Initial = rootNode.p0;
@@ -65,7 +67,7 @@ TP3.Geometry = {
 			}
 
 		}
-
+		//répéter pour chacun des enfants de la branches  
 		if (numberOfChild >= 1) {
 			{
 				rootNode.childNode.forEach(node => {
@@ -80,112 +82,76 @@ TP3.Geometry = {
 
 	generateSegmentsHermite: function (rootNode, lengthDivisions = 4, radialDivisions = 8) {
 
-
 		if (rootNode.parentNode == null) {
+			//cas special au tronc, on suppose une ligne droite 
 			rootNode.v0 = new THREE.Vector3(0, 1, 0);
 		} else {
 			rootNode.v0 = rootNode.parentNode.v1;
 		}
 		rootNode.v1 = new THREE.Vector3().subVectors(rootNode.p1, rootNode.p0);
 
-
+		//information de base 
 		let numberOfChild = rootNode.childNode.length;
 		rootNode.sections = []
 		rootNode.points = []
-
-
 		let degree = 2 * Math.PI / (radialDivisions);
+
+
 		for (let i = 0; i < lengthDivisions; i++) {
 			let t = i / (lengthDivisions - 1);
-
-			let hermitePoint = this.hermite(rootNode.p0, rootNode.p1, rootNode.v0, rootNode.v1, t)
-
+			//information à t 
 			let radius = rootNode.a0 * (1 - t) + rootNode.a1 * t;
-
+			let hermitePoint = this.hermite(rootNode.p0, rootNode.p1, rootNode.v0, rootNode.v1, t)
 			let centralPoint = hermitePoint[0];
 			let vectorTangente = hermitePoint[1].normalize();
 
 			rootNode.points.push(centralPoint.clone())
-			// let centralPoint = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.p0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.p1, t));
-			// let vectorTangente = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(rootNode.v0, (1 - t)), new THREE.Vector3().addScaledVector(rootNode.v1, t));
-			// vectorTangente.normalize();
-
-
-			// change le direction de la normal afin de garder un sens au branche
-			// if (vectorTangente.x > 0) {
-			// 	vectorTangente.x = - vectorTangente.x;
-			// 	vectorTangente.y = - vectorTangente.y;
-			// 	vectorTangente.z = - vectorTangente.z;
-			// }
-
-
-
-			//calculer les angles pour la rotation des branche
-
-
-
-
-
 			let arrayPoint = []
-			// calculer les 2 vecteur orthogonaux à la normal, mais de facon contrôler ( direction de base en x)
-			let point1 = new THREE.Vector3(vectorTangente.y, -  vectorTangente.x, 0);
+			// calculer les 2 vecteur orthogonaux à la normal, mais de facon contrôler ( direction de base en x  > 0)
+
+			let point1 = new THREE.Vector3(vectorTangente.y, -vectorTangente.x, 0);
 			point1.normalize();
-			point1.multiplyScalar(radius);
 			let point2 = new THREE.Vector3().crossVectors(point1, vectorTangente);
 			point2.normalize();
+			//s'assurer de la taille 
+			point1.multiplyScalar(radius);
 			point2.multiplyScalar(radius);
 
-			// let rho = Math.asin(vectorTangente.y);
-			// if ((vectorTangente.x < 0 && vectorTangente.y > 0)) {
-			// 	rho = rho - 2 * Math.PI;
-			// }
-			// let hypothenuseX =  Math.cos(rho)
+
+
+			//forcer l'orientation du  x 
 			let theta = 0;
-
-
 			if (point1.x < 0) {
 				point1 = new THREE.Vector3(-point1.x, -point1.y, -point1.z);
 			}
-
 			if (vectorTangente.y < 0) {
 				theta = Math.PI;
 			}
-			// if (point1.x < 0 || (point2.z < 0 && point2.z > 0.5) || (point2.y && point2.y > 0.5)) {
-			// 	point2 = new THREE.Vector3(-point2.x, -point2.y, -point2.z);
-			// }
 
+			// cas special avec étant sur l'Axe 
 			if (Math.abs(vectorTangente.x) > 0.999) {
 				point1 = new THREE.Vector3(0, -radius, 0);
 				point2 = new THREE.Vector3(0, 0, radius);
 
 			}
-			if (Math.abs(vectorTangente.z > 0.999)) {
+			if (Math.abs(vectorTangente.z) > 0.999) {
 				point1 = new THREE.Vector3(radius, 0, 0);
 				point2 = new THREE.Vector3(0, -radius, 0);
 
 			}
-			if (Math.abs(vectorTangente.y > 0.999)) {
+			if (Math.abs(vectorTangente.y) > 0.999) {
 				point1 = new THREE.Vector3(radius, 0, 0);
 				point2 = new THREE.Vector3(0, 0, radius);
 
 			}
 			for (let j = 0; j < radialDivisions + 1; j++) {
-				// créer le point de base en utilisant en utilisant l'opposé en x, z de la tangente
-				// let point = new THREE.Vector3(radius, 0, 0);
+				//calculer la proportion des vecteur orthogonaux 
 				let a = Math.cos(theta + j * degree);
 				let b = Math.sin(theta + j * degree);
+
+				//L'Appliquer 
 				let point = new THREE.Vector3(point1.x * a + point2.x * b, point1.y * a + point2.y * b, point1.z * a + point2.z * b);
-				// let point = new THREE.Vector3(hypothenuseXZ * Math.cos(rotation), radius * Math.sin(rho) * Math.cos(rotation + theta), hypothenuseXZ * Math.sin(rotation));
-
-				// let matrixRotation = new THREE.Matrix4().makeRotationY(degree * j)
-				// let rotationAxisXinZ = new THREE.Matrix4().makeRotationZ(rho)
-				// let rotationAxisXinY = new THREE.Matrix4().makeRotationY(theta)
-
-				// point.applyMatrix4(rotationAxisXinY)
-				// point.applyMatrix4(rotationAxisXinZ)
-				// point.applyMatrix4(matrixRotation)
-
-				let newPoint = new THREE.Vector3(point.x + centralPoint.x, point.y + centralPoint.y, point.z + centralPoint.z)
+				let newPoint = new THREE.Vector3().addVectors(point, centralPoint);
 				arrayPoint.push(newPoint)
 
 			}
@@ -193,15 +159,9 @@ TP3.Geometry = {
 		}
 
 
-		if (numberOfChild >= 1) {
+		if (numberOfChild > 0) {
 			{
-
-
 				rootNode.childNode.forEach(node => {
-
-					if (node.a1 / node.parentNode.a1 > 1.001) {
-						console.log(node.a1 / node.parentNode.a1)
-					}
 					this.generateSegmentsHermite(node, lengthDivisions, radialDivisions);
 				});
 			}
@@ -213,6 +173,7 @@ TP3.Geometry = {
 
 	hermite: function (h0, h1, v0, v1, t) {
 
+		//matrice de base 
 		let m = new THREE.Matrix4().set(
 			h0.x, h0.y, h0.z, 1,
 			h1.x, h1.y, h1.z, 1,
@@ -220,6 +181,7 @@ TP3.Geometry = {
 			v1.x, v1.y, v1.z, 1
 		);
 
+		// Conversion d’une courbe de Hermite en courbe de Bezier (ps : facteur 1/3 à l'intérieur )
 		let matrixDeCasteljau = new THREE.Matrix4().set(
 			1, 0, 0, 0,
 			1, 0, 1 / 3, 0,
@@ -227,6 +189,7 @@ TP3.Geometry = {
 			0, 1, 0, 0
 		);
 
+		//prépartion de la matrice
 		let matriceP = new THREE.Matrix4().multiplyMatrices(matrixDeCasteljau, m);
 		let arrayPoint = [
 			new THREE.Vector3(matriceP.elements[0], matriceP.elements[4], matriceP.elements[8]),
@@ -234,6 +197,7 @@ TP3.Geometry = {
 			new THREE.Vector3(matriceP.elements[2], matriceP.elements[6], matriceP.elements[10]),
 			new THREE.Vector3(matriceP.elements[3], matriceP.elements[7], matriceP.elements[11])]
 
+		//caculer bezier avec la matrice	
 		let result = this.bezier(arrayPoint, t);
 
 
@@ -242,12 +206,14 @@ TP3.Geometry = {
 	},
 
 	bezier: function (listPoint, t) {
+		// si dernier segment on interpole et on termine
 		if (listPoint.length == 2) {
 			let newPoint = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(listPoint[0], (1 - t)), new THREE.Vector3().addScaledVector(listPoint[1], t));
 			let newPointTangente = new THREE.Vector3().subVectors(listPoint[0], listPoint[1]);
 			return [newPoint, newPointTangente];
 		}
 
+		// si on a pas le de dernier segment, on interpole les nouveaux point et on renvoie dans bezier avec un réduction d,un point aka un segment 
 		let newArray = []
 		for (let i = 0; i < listPoint.length - 1; i++) {
 			let newPoint = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(listPoint[i], (1 - t)), new THREE.Vector3().addScaledVector(listPoint[i + 1], t));
