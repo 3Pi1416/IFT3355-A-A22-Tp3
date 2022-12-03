@@ -16,11 +16,13 @@ class Node {
 		this.v0 = null;
 		this.v1 = null;
 
-		this.transformation = new THREE.Vector3(0, 0, 0); //Matrice de transformation
-		this.transformationParenthood = new THREE.Vector3(0, 0, 0);
+		this.matrixTransformation = new THREE.Matrix4(); //Matrice de transformation
+		this.vectorTransformationParenthood = new THREE.Matrix4(); // vector to move P1 to P1'
 
 		this.sections = null; //Liste contenant une liste de points representant les segments circulaires du cylindre generalise
 		this.points = null;
+
+		this.vel = new THREE.Vector3(0, 0, 0); // initialisation de la  vitesse
 	}
 }
 

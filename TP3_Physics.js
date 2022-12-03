@@ -58,16 +58,14 @@ TP3.Physics = {
     // Propagation du mouvement du parent.
     let originalP0 = node.p0Initial.clone();
     let originalP1 = node.p1Initial.clone();
-    node.transformationParenthood = new THREE.Vector3(0, 0, 0);
+    let moveP1 = originalP1.clone().applyMatrix4(node.matrixTransformation); //.add(originalP0);
+    node.vectorTransformationParenthood = new THREE.Matrix4();
     if (node.parentNode != null) {
-      originalP0.add(node.parentNode.transformationParenthood);
-      originalP1.add(node.parentNode.transformationParenthood);
-      node.transformationParenthood = node.parentNode.transformationParenthood.clone();
+      // appliquer les transformations passées
+      moveP1.applyMatrix4(node.parentNode.vectorTransformationParenthood);
+      originalP0.applyMatrix4(node.parentNode.vectorTransformationParenthood);
+      originalP1.applyMatrix4(node.parentNode.vectorTransformationParenthood);
     }
-
-    // appliquer les transformations passées 
-    let moveP1 = originalP1.clone();
-    moveP1.add(node.transformation);
 
 
     //Préparer les variables pour le cacule de movement
@@ -87,10 +85,10 @@ TP3.Physics = {
     let quaternionRotation = new THREE.Quaternion().setFromAxisAngle(intialCrossNonConserved, angleIntialNonConserved);
 
     // la matrice de rotation
-    let matrixRotation = new THREE.Matrix4().makeRotationFromQuaternion(quaternionRotation);
+    let matrixRotationTransformation = new THREE.Matrix4().makeRotationFromQuaternion(quaternionRotation);
 
     let vectorBranch = new THREE.Vector3().subVectors(moveP1, originalP0);
-    let trueNewP1 = vectorBranch.clone().applyMatrix4(matrixRotation);
+    let trueNewP1 = vectorBranch.clone().applyMatrix4(matrixRotationTransformation);
 
     trueNewP1.add(originalP0);
 
@@ -106,9 +104,9 @@ TP3.Physics = {
 
 
     quaternionRotation = new THREE.Quaternion().setFromAxisAngle(currentCrossInitial, angleSquared);
-    matrixRotation = new THREE.Matrix4().makeRotationFromQuaternion(quaternionRotation);
+    matrixRotationTransformation = new THREE.Matrix4().makeRotationFromQuaternion(quaternionRotation);
     let restitutionVectorBranch = new THREE.Vector3().subVectors(originalP1, originalP0).normalize();
-    let restitutionPoint = restitutionVectorBranch.clone().applyMatrix4(matrixRotation);
+    let restitutionPoint = restitutionVectorBranch.clone().applyMatrix4(matrixRotationTransformation);
     restitutionPoint.add(originalP0);
 
 
@@ -121,11 +119,19 @@ TP3.Physics = {
     // facteur d'amortissement
     node.vel.multiplyScalar(0.7);
 
-    node.transformation = new THREE.Vector3().subVectors(trueNewP1, originalP1);
-    node.transformationParenthood.add(node.transformation.clone());
+    node.matrixTransformation = matrixRotationTransformation.clone();
+    let TotalMovement = new THREE.Vector3().subVectors(trueNewP1, node.p1Initial);
+    node.vectorTransformationParenthood = new THREE.Matrix4().makeTranslation(TotalMovement.x, TotalMovement.y, TotalMovement.z);
 
-    node.p1 = originalP1.clone().add(node.transformation);
+
     node.p0 = originalP0.clone();
+    node.p1 = trueNewP1.clone();
+
+
+    // Appel recursif sur les enfants
+    node.childNode.forEach(childNode => {
+      this.applyForces(childNode, dt, time);
+    });
 
 
     // Appel recursif sur les enfants
