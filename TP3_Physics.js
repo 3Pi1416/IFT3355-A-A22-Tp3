@@ -95,7 +95,7 @@ TP3.Physics = {
     trueNewP1.add(originalP0);
 
     // Calculer la vrai vélocité causé par l'Angle
-    node.vel = new THREE.Vector3().subVectors(trueNewP1, moveP1).add(node.vel);
+    node.vel = new THREE.Vector3().subVectors(trueNewP1, moveP1).divideScalar(dt);
 
     let currentDirection = new THREE.Vector3().subVectors(trueNewP1, originalP0);
     let currentCrossInitial = new THREE.Vector3().crossVectors(currentDirection, initialDirection);
