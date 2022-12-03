@@ -6,18 +6,13 @@ TP3.Render = {
 		//créer une branche 
 		let distanceBranch = rootNode.p1.distanceTo(rootNode.p0);
 		let cylinder = new THREE.CylinderBufferGeometry(rootNode.a1, rootNode.a0, distanceBranch, 32);
-		let branch = new THREE.Mesh(cylinder, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
-
-
-		// 
-		let vectorBranch = new THREE.Vector3();
-		vectorBranch.subVectors(rootNode.p1, rootNode.p0);
 
 
 		//calculer les angles pour la rotation des branche 
+		let vectorBranch = new THREE.Vector3();
+		vectorBranch.subVectors(rootNode.p1, rootNode.p0);
 		let rho = Math.PI / 2 - Math.asin(vectorBranch.y / distanceBranch);
 		let teta = Math.atan2(vectorBranch.x, vectorBranch.z);
-
 
 		//Lorsqu'On fait un demi tour, on regarde de l'autre côté parce que la fonciton tan ne fais pas de différence avec ou est le négatif 
 		if (vectorBranch.z < 0) {
@@ -30,10 +25,7 @@ TP3.Render = {
 		//appliquer la rotation a des matrice 
 		let matrixRotationX = new THREE.Matrix4().makeRotationX(rho);
 		let matrixRotationY = new THREE.Matrix4().makeRotationY(teta);
-
 		let matrixRotationBase = new THREE.Matrix4().multiplyMatrices(matrixRotationY, matrixRotationX);
-
-
 
 		// movement pour centrer le cylindre 
 		let matrixTranslation = new THREE.Matrix4().makeTranslation(0, distanceBranch / 2, 0);
@@ -43,64 +35,79 @@ TP3.Render = {
 		let test = new THREE.Matrix4().multiplyMatrices(matrixTranslationP0, matrixBasicMovement);
 
 		// matrixTransformation.multiply(matrixBasicMovement)
-		branch.applyMatrix4(test)
-		scene.add(branch);
+		cylinder.applyMatrix4(test)
 
 
 		if (rootNode.childNode.length != 0) {
 			rootNode.childNode.forEach(child => {
 				this.drawTreeRough(child, scene, alpha, radialDivisions, leavesCutoff, leavesDensity, applesProbability, matrix);
 			});
-			// this.drawTreeRough(rootNode.childNode[0], scene, alpha, radialDivisions, leavesCutoff, leavesDensity, applesProbability, matrix);
 		}
 
-
-		if (rootNode.a0 < alpha * leavesCutoff) {
+		let hasLeaves = rootNode.a0 < alpha * leavesCutoff;
+		if (hasLeaves) {
+			let squares = new THREE.PlaneBufferGeometry()
 			if (rootNode.childNode.length == 0) {
+
 				for (let i = 0; i < leavesDensity; i++) {
+					//créer un carré pour la feuille  feuille
 					let square = new THREE.PlaneBufferGeometry(alpha, alpha);
-					let leaf = new THREE.Mesh(square, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
+
+					// préparer un mouvement et rotation aléatoire a celle-ci
 					let randomForAngle = Math.random() * 2 * Math.PI;
 					let randomForAngle2 = Math.random() * 2 * Math.PI;
 					let randomForPosition = Math.random() * (distanceBranch + alpha);
 					let randomForDistanceFromBranch = (Math.random() - 0.5) * alpha;
-					let matrixTemp = new THREE.Matrix4();
-					matrixTemp.makeRotationX(randomForAngle2);
-					let matrixTransformationLeaf = new THREE.Matrix4().multiplyMatrices(matrixTranslationP0, matrixTemp);
-					matrixTemp.makeRotationY(randomForAngle);
-					matrixTransformationLeaf.multiply(matrixTemp);
-					matrixTemp.makeTranslation(randomForDistanceFromBranch, randomForPosition + alpha / 2, 0);
-					matrixTransformationLeaf.multiply(matrixTemp);
-					//appliquer la transformation de la branche
-					leaf.applyMatrix4(matrixTransformationLeaf);
-					scene.add(leaf); // j'utilise clairement pas correctement le plane buffer 
+					//appliquer les rotations et la translation
+					let matrixRotationLeaf = new THREE.Matrix4().makeRotationX(randomForAngle2);
+					let matrixTransformationLeaf = new THREE.Matrix4().multiplyMatrices(matrixTranslationP0, matrixRotationLeaf);
+					matrixRotationLeaf.makeRotationY(randomForAngle);
+					matrixTransformationLeaf.multiply(matrixRotationLeaf);
+					matrixRotationLeaf.makeTranslation(randomForDistanceFromBranch, randomForPosition + alpha / 2, 0);
+					matrixTransformationLeaf.multiply(matrixRotationLeaf);
+
+					//appliquer la transformation complète de la feuille
+					square.applyMatrix4(matrixTransformationLeaf);
+
+					//joindre les mesh
+					if (i == 0) {
+						squares = square;
+					} else {
+						squares = THREE.BufferGeometryUtils.mergeBufferGeometries([squares, square], true);
+					}
+
 				}
 
 			} else {
-				//  TODO
-				// THREE.BufferGeometryUtils.mergeBufferGeometries() 
+
 				for (let i = 0; i < leavesDensity; i++) {
 					let square = new THREE.PlaneBufferGeometry(alpha, alpha);
-					let leaf = new THREE.Mesh(square, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
 					let randomForAngle = Math.random() * 2 * Math.PI;
 					let randomForAngle2 = Math.random() * 2 * Math.PI;
 					let randomForPosition = Math.random() * distanceBranch;
 					let randomForDistanceFromBranch = (Math.random() - 0.5) * alpha;
-					let matrixTemp = new THREE.Matrix4();
-					matrixTemp.makeRotationX(randomForAngle2);
-					let matrixTransformationLeaf = new THREE.Matrix4().multiplyMatrices(matrixTranslationP0, matrixTemp);
-					matrixTemp.makeRotationY(randomForAngle);
-					matrixTransformationLeaf.multiply(matrixTemp);
-					matrixTemp.makeTranslation(randomForDistanceFromBranch, randomForPosition + alpha / 2, 0);
-					matrixTransformationLeaf.multiply(matrixTemp);
+					//appliquer les rotations et la translation
+					let matrixRotationLeaf = new THREE.Matrix4().makeRotationX(randomForAngle2);
+					let matrixTransformationLeaf = new THREE.Matrix4().multiplyMatrices(matrixTranslationP0, matrixRotationLeaf);
+					matrixRotationLeaf.makeRotationY(randomForAngle);
+					matrixTransformationLeaf.multiply(matrixRotationLeaf);
+					matrixRotationLeaf.makeTranslation(randomForDistanceFromBranch, randomForPosition + alpha / 2, 0);
+					matrixTransformationLeaf.multiply(matrixRotationLeaf);
 					//appliquer la transformation de la branche
-					leaf.applyMatrix4(matrixTransformationLeaf);
-
-					scene.add(leaf); // j'utilise clairement pas correctement le plane buffer 
-
+					square.applyMatrix4(matrixTransformationLeaf);
+					//joindre les mesh
+					if (i == 0) {
+						squares = square;
+					} else {
+						squares = THREE.BufferGeometryUtils.mergeBufferGeometries([squares, square], true);
+					}
 				}
 
 			}
+			//transformer les carré en feuilles 
+			let leaves = new THREE.Mesh(squares, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
+			scene.add(leaves);
+
 
 			let haveApple = Math.random() <= applesProbability;
 			if (haveApple) {
@@ -113,6 +120,8 @@ TP3.Render = {
 			}
 		}
 
+		let branches = new THREE.Mesh(cylinder, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
+		scene.add(branches);
 		return
 	},
 
