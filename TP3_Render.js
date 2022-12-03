@@ -196,8 +196,7 @@ TP3.Render = {
 				}
 
 			} else {
-				//  TODO
-				// THREE.BufferGeometryUtils.mergeBufferGeometries() 
+
 				for (let i = 0; i < leavesDensity; i++) {
 					facesIdx.push((i * 3), (i * 3) + 1, (i * 3) + 2)
 					let randomPart = Math.floor(Math.random() * (rootNode.points.length - 1))
@@ -287,26 +286,54 @@ TP3.Render = {
 
 		if (rootNode.endArrayBranches > -1) {
 			for (let point = rootNode.beginningArrayBranches; point <= rootNode.endArrayBranches; point++) {
-				trunkGeometryBuffer[point * 3] = trunkGeometryBuffer[point * 3] + rootNode.transformationParenthood.x;
-				trunkGeometryBuffer[point * 3 + 1] = trunkGeometryBuffer[point * 3 + 1] + rootNode.transformationParenthood.y;
-				trunkGeometryBuffer[point * 3 + 2] = trunkGeometryBuffer[point * 3 + 2] + rootNode.transformationParenthood.z;
+
+				let tempVector = new THREE.Vector3(
+					trunkGeometryBuffer[point * 3],
+					trunkGeometryBuffer[point * 3 + 1],
+					trunkGeometryBuffer[point * 3 + 2]);
+				tempVector.sub(node.p0Initial).applyMatrix4(node.matrixTransformation).add(node.p0Initial);
+				if (rootNode.ParentNode != null) {
+					tempVector.applyMatrix4(node.parentNode.vectorTransformationParenthood);
+				}
+
+				trunkGeometryBuffer[point * 3] = tempVector.x;
+				trunkGeometryBuffer[point * 3 + 1] = tempVector.y;
+				trunkGeometryBuffer[point * 3 + 2] = tempVector.z;
 			}
 		}
 
 		if (rootNode.endArrayleaves > -1) {
 			for (let point = rootNode.beginningArrayleaves; point <= rootNode.endArrayleaves; point++) {
-				leavesGeometryBuffer[point * 3] = leavesGeometryBuffer[point * 3] + rootNode.transformationParenthood.x
-				leavesGeometryBuffer[point * 3 + 1] = leavesGeometryBuffer[point * 3 + 1] + rootNode.transformationParenthood.y
-				leavesGeometryBuffer[point * 3 + 2] = leavesGeometryBuffer[point * 3 + 2] + rootNode.transformationParenthood.z
+				let tempVector = new THREE.Vector3(
+					leavesGeometryBuffer[point * 3],
+					leavesGeometryBuffer[point * 3 + 1],
+					leavesGeometryBuffer[point * 3 + 2]);
+				tempVector.sub(node.p0Initial).applyMatrix4(node.matrixTransformation).add(node.p0Initial);
+				if (rootNode.ParentNode != null) {
+					tempVector.applyMatrix4(node.parentNode.vectorTransformationParenthood);
+				}
+
+				leavesGeometryBuffer[point * 3] = tempVector.x;
+				leavesGeometryBuffer[point * 3 + 1] = tempVector.y;
+				leavesGeometryBuffer[point * 3 + 2] = tempVector.z;
 			}
 
 		}
 
 		if (rootNode.endArrayApples > -1) {
 			for (let point = rootNode.beginningArrayApples; point <= rootNode.endArrayApples; point++) {
-				applesGeometryBuffer[point * 3] = applesGeometryBuffer[point * 3] + rootNode.transformationParenthood.x
-				applesGeometryBuffer[point * 3 + 1] = applesGeometryBuffer[point * 3 + 1] + rootNode.transformationParenthood.y
-				applesGeometryBuffer[point * 3 + 2] = applesGeometryBuffer[point * 3 + 2] + rootNode.transformationParenthood.z
+				let tempVector = new THREE.Vector3(
+					applesGeometryBuffer[point * 3],
+					applesGeometryBuffer[point * 3 + 1],
+					applesGeometryBuffer[point * 3 + 2]);
+				tempVector.sub(node.p0Initial).applyMatrix4(node.matrixTransformation).add(node.p0Initial);
+				if (rootNode.ParentNode != null) {
+					tempVector.applyMatrix4(node.parentNode.vectorTransformationParenthood);
+				}
+
+				applesGeometryBuffer[point * 3] = tempVector.x;
+				applesGeometryBuffer[point * 3 + 1] = tempVector.y;
+				applesGeometryBuffer[point * 3 + 2] = tempVector.z;
 			}
 		}
 
