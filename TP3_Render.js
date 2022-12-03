@@ -43,21 +43,13 @@ TP3.Render = {
 			rootNode.childNode.forEach(child => {
 
 				let output = this.drawTreeRough(child, scene, alpha, radialDivisions, leavesCutoff, leavesDensity, applesProbability, matrix);
-				squares = THREE.BufferGeometryUtils.mergeBufferGeometries([cylinders, output[0]], true);
+				cylinders = THREE.BufferGeometryUtils.mergeBufferGeometries([cylinders, output[0]], true);
 
 				if (isfirstChild) {
 					isfirstChild = false;
 					squares = output[1];
-					geometryApple = output[2];
 				} else {
 					squares = THREE.BufferGeometryUtils.mergeBufferGeometries([squares, output[1]], true);
-
-					if (geometryApple.hasAttribute("position")) {
-						squares = THREE.BufferGeometryUtils.mergeBufferGeometries([geometryApple, output[2]], true);
-
-					} else {
-						geometryApple = output[2];
-					}
 				}
 
 			});
@@ -89,7 +81,7 @@ TP3.Render = {
 					square.applyMatrix4(matrixTransformationLeaf);
 
 					//joindre les mesh
-					if (i == 0) {
+					if (squares == null) {
 						squares = square;
 					} else {
 						squares = THREE.BufferGeometryUtils.mergeBufferGeometries([squares, square], true);
@@ -115,7 +107,7 @@ TP3.Render = {
 					//appliquer la transformation de la branche
 					square.applyMatrix4(matrixTransformationLeaf);
 					//joindre les mesh
-					if (i == 0) {
+					if (i == null) {
 						squares = square;
 					} else {
 						squares = THREE.BufferGeometryUtils.mergeBufferGeometries([squares, square], true);
@@ -131,20 +123,20 @@ TP3.Render = {
 				geometryApple = new THREE.BoxGeometry(alpha, alpha, alpha);
 				let matrixTranslationP1 = new THREE.Matrix4().makeTranslation(rootNode.p1.x, rootNode.p1.y, rootNode.p1.z);
 				geometryApple.applyMatrix4(matrixTranslationP1);
+				let apple = new THREE.Mesh(geometryApple, new THREE.MeshPhongMaterial({ color: 0x5F0B0B }));
+				scene.add(apple);
+
 
 			}
 		}
 
-		let branches = new THREE.Mesh(cylinders, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
-		scene.add(branches);
+		if (rootNode.parentNode == null) {
+			let branches = new THREE.Mesh(cylinders, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
+			scene.add(branches);
 
-		//transformer les carré en feuilles 
-		let leaves = new THREE.Mesh(squares, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
-		scene.add(leaves);
-
-		if (haveApple) {
-			let apple = new THREE.Mesh(geometryApple, new THREE.MeshPhongMaterial({ color: 0x5F0B0B }));
-			scene.add(apple);
+			//transformer les carré en feuilles 
+			let leaves = new THREE.Mesh(squares, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
+			scene.add(leaves);
 		}
 
 		return [cylinders, squares, geometryApple]
@@ -309,6 +301,13 @@ TP3.Render = {
 					apples = output[2];
 					rootNode.hasApple = true;
 				}
+
+				// if (geometryApple != null && output[2] != null) {
+				// 	console.log(geometryApple, output[2])
+				// 	geometryApple = THREE.BufferGeometryUtils.mergeBufferGeometries([geometryApple, output[2]], true);
+				// } else if (output[2] != null) {
+				// 	geometryApple = output[2];
+				// }
 
 			});
 
