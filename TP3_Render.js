@@ -48,8 +48,16 @@ TP3.Render = {
 				if (isfirstChild) {
 					isfirstChild = false;
 					squares = output[1];
+					geometryApple = output[2];
 				} else {
 					squares = THREE.BufferGeometryUtils.mergeBufferGeometries([squares, output[1]], true);
+
+					if (geometryApple.hasAttribute("position")) {
+						squares = THREE.BufferGeometryUtils.mergeBufferGeometries([geometryApple, output[2]], true);
+
+					} else {
+						geometryApple = output[2];
+					}
 				}
 
 			});
@@ -184,6 +192,7 @@ TP3.Render = {
 		facesIdx = [];
 		let angle = Math.cos(Math.PI / 4)
 		let distanceBranch
+		let hasApple = false;
 		if (rootNode.a0 < alpha * leavesCutoff) {
 			hasLeaves = true;
 			if (rootNode.childNode.length == 0) {
