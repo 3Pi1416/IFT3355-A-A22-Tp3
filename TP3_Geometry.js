@@ -18,8 +18,8 @@ class Node {
 
 		this.hasApple = false;
 
-		this.transformation = new THREE.Vector3(0, 0, 0); //Matrice de transformation
-		this.transformationParenthood = new THREE.Vector3(0, 0, 0);
+		this.transformation = new THREE.Matrix4(); //Matrice de transformation
+		this.transformationParenthood = new THREE.Matrix4();
 
 		this.sections = null; //Liste contenant une liste de points representant les segments circulaires du cylindre generalise
 		this.points = null;

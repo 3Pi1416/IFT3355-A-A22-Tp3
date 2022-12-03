@@ -286,27 +286,27 @@ TP3.Render = {
 	updateTreeHermite: function (trunkGeometryBuffer, leavesGeometryBuffer, applesGeometryBuffer, rootNode) {
 
 		if (rootNode.endArrayBranches > -1) {
-			for (points = rootNode.beginningArrayBranches; points <= rootNode.endArrayBranches; point++) {
-				trunkGeometryBuffer[points * 3] = trunkGeometryBuffer[points * 3] + rootNode.transformationParenthood.x;
-				trunkGeometryBuffer[points * 3 + 1] = trunkGeometryBuffer[points * 3 + 1] + rootNode.transformationParenthood.y;
-				trunkGeometryBuffer[points * 3 + 2] = trunkGeometryBuffer[points * 3 + 2] + rootNode.transformationParenthood.z;
+			for (let point = rootNode.beginningArrayBranches; point <= rootNode.endArrayBranches; point++) {
+				trunkGeometryBuffer[point * 3] = trunkGeometryBuffer[point * 3] + rootNode.transformationParenthood.x;
+				trunkGeometryBuffer[point * 3 + 1] = trunkGeometryBuffer[point * 3 + 1] + rootNode.transformationParenthood.y;
+				trunkGeometryBuffer[point * 3 + 2] = trunkGeometryBuffer[point * 3 + 2] + rootNode.transformationParenthood.z;
 			}
 		}
 
 		if (rootNode.endArrayleaves > -1) {
-			for (points = rootNode.beginningArrayleaves; points <= rootNode.endArrayleaves; point++) {
-				leavesGeometryBuffer[points * 3] = leavesGeometryBuffer[points * 3] + rootNode.transformationParenthood.x
-				leavesGeometryBuffer[points * 3 + 1] = leavesGeometryBuffer[points * 3 + 1] + rootNode.transformationParenthood.y
-				leavesGeometryBuffer[points * 3 + 2] = leavesGeometryBuffer[points * 3 + 2] + rootNode.transformationParenthood.z
+			for (let point = rootNode.beginningArrayleaves; point <= rootNode.endArrayleaves; point++) {
+				leavesGeometryBuffer[point * 3] = leavesGeometryBuffer[point * 3] + rootNode.transformationParenthood.x
+				leavesGeometryBuffer[point * 3 + 1] = leavesGeometryBuffer[point * 3 + 1] + rootNode.transformationParenthood.y
+				leavesGeometryBuffer[point * 3 + 2] = leavesGeometryBuffer[point * 3 + 2] + rootNode.transformationParenthood.z
 			}
 
 		}
 
 		if (rootNode.endArrayApples > -1) {
-			for (points = rootNode.beginningArrayApples; points <= rootNode.endArrayApples; point++) {
-				applesGeometryBuffer[points * 3] = applesGeometryBuffer[points * 3] + rootNode.transformationParenthood.x
-				applesGeometryBuffer[points * 3 + 1] = applesGeometryBuffer[points * 3 + 1] + rootNode.transformationParenthood.y
-				applesGeometryBuffer[points * 3 + 2] = applesGeometryBuffer[points * 3 + 2] + rootNode.transformationParenthood.z
+			for (let point = rootNode.beginningArrayApples; point <= rootNode.endArrayApples; point++) {
+				applesGeometryBuffer[point * 3] = applesGeometryBuffer[point * 3] + rootNode.transformationParenthood.x
+				applesGeometryBuffer[point * 3 + 1] = applesGeometryBuffer[point * 3 + 1] + rootNode.transformationParenthood.y
+				applesGeometryBuffer[point * 3 + 2] = applesGeometryBuffer[point * 3 + 2] + rootNode.transformationParenthood.z
 			}
 		}
 
