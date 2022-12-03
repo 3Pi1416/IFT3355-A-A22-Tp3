@@ -239,9 +239,9 @@ TP3.Render = {
 			scene.add(leafsMesh);
 
 
-			rootNode.hasApple = Math.random() <= applesProbability;
-			if (rootNode.hasApple) {
-
+			let hasApple = Math.random() <= applesProbability;
+			if (hasApple) {
+				node.appleIndices = true;
 				let geometryApple = new THREE.SphereBufferGeometry(alpha / 2, 32, 32);
 				let apple = new THREE.Mesh(geometryApple, new THREE.MeshPhongMaterial({ color: 0x5F0B0B }));
 				let matrixTranslationP1 = new THREE.Matrix4().makeTranslation(rootNode.p1.x, rootNode.p1.y - alpha / 2, rootNode.p1.z);

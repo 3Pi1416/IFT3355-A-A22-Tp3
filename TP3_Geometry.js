@@ -13,10 +13,8 @@ class Node {
 		this.a0 = null; //Rayon de la branche a p0
 		this.a1 = null; //Rayon de la branche a p1
 
-		this.v0 = null;
-		this.v1 = null;
-
-		this.hasApple = false;
+		this.v0 = null; //la tangente  point p0
+		this.v1 = null; //la tangente  point p1
 
 		this.matrixTransformation = new THREE.Matrix4(); //Matrice de transformation
 		this.vectorTransformationParenthood = new THREE.Matrix4(); // vector to move P1 to P1'
@@ -24,9 +22,10 @@ class Node {
 		this.sections = null; //Liste contenant une liste de points representant les segments circulaires du cylindre generalise
 		this.points = null;
 
-		this.vel = 0 ;
+		this.vel = new THREE.Vector3(0,0,0); // initialisation de la  vitesse 
 
-		this.beginningArrayBranches = -1;
+		//information sur les points utiliser pour faire les objets 
+		this.beginningArrayBranches = -1; 
 		this.endArrayBranches = -1
 
 		this.beginningArrayApples = -1;
@@ -34,6 +33,8 @@ class Node {
 
 		this.beginningArrayleaves = -1;
 		this.endArrayleaves = -1
+
+		this.appleIndices = null; // s'il y a une pomme sur la branche 
 	}
 }
 
