@@ -37,6 +37,18 @@ TP3.Physics = {
     return mass;
   },
 
+  // applyRotation: function (parentNode, originalP0, originalP1) {
+
+
+  //   if (parentNode.parentNode != null) {
+  //     [originalP0, originalP1] = this.applyRotation(parentNode.parentNode, originalP0, originalP1)
+  //   }
+  //   originalP0.sub(parentNode.p0Initial).applyMatrix4(parentNode.matrixTransformation).add(parentNode.p0Initial);
+  //   originalP1.sub(parentNode.p0Initial).applyMatrix4(parentNode.matrixTransformation).add(parentNode.p0Initial);
+
+  //   return [originalP0, originalP1]
+  // },
+
   applyForces: function (node, dt, time) {
     var u = Math.sin(1 * time) * 4;
     u += Math.sin(2.5 * time) * 2;
@@ -55,18 +67,18 @@ TP3.Physics = {
 
     // TODO: Projection du mouvement, force de restitution et amortissement de la velocite
 
-    // Propagation du mouvement du parent.
+
+    let parentNode = node.parentNode;
     let originalP0 = node.p0Initial.clone();
     let originalP1 = node.p1Initial.clone();
-    let moveP1 = originalP1.clone().sub(originalP0).applyMatrix4(node.matrixTransformation).add(originalP0);
-    node.vectorTransformationParenthood = new THREE.Matrix4();
-
-    if (node.parentNode != null) {
-      // appliquer les transformations passées 
-      moveP1.applyMatrix4(node.parentNode.vectorTransformationParenthood);
-      originalP0.applyMatrix4(node.parentNode.vectorTransformationParenthood);
-      originalP1.applyMatrix4(node.parentNode.vectorTransformationParenthood);
+    //propagation 
+    while (parentNode != null) {
+      originalP0.sub(parentNode.p0Initial).applyMatrix4(parentNode.matrixTransformation).add(parentNode.p0Initial);
+      originalP1.sub(parentNode.p0Initial).applyMatrix4(parentNode.matrixTransformation).add(parentNode.p0Initial);
+      parentNode = parentNode.parentNode;
     }
+
+    let moveP1 = originalP1.clone().sub(originalP0).applyMatrix4(node.matrixTransformation).add(originalP0);
 
     //Préparer les variables pour le cacule de movement
     let movement = node.vel.clone().multiplyScalar(dt);
@@ -74,8 +86,8 @@ TP3.Physics = {
     let nonConservedP1 = new THREE.Vector3().addVectors(moveP1, movement);
 
     // calculer l'angle causé par le mouvement
-    let initialDirection = new THREE.Vector3().subVectors(moveP1, originalP0).normalize();
-    let nonConservedDirection = new THREE.Vector3().subVectors(nonConservedP1, originalP0).normalize();
+    let initialDirection = new THREE.Vector3().subVectors(moveP1, originalP0);
+    let nonConservedDirection = new THREE.Vector3().subVectors(nonConservedP1, originalP0);
     let crossNonConserved = initialDirection.clone().cross(nonConservedDirection);
     let angle = initialDirection.angleTo(nonConservedDirection);
 
@@ -85,7 +97,7 @@ TP3.Physics = {
 
     // la matrice de rotation
     // let matrixRotationTransformation = new THREE.Matrix4().makeRotationFromQuaternion(quaternionRotation);
-    let matrixRotationTransformation = new THREE.Matrix4().makeRotationAxis(crossNonConserved,  angle);
+    let matrixRotationTransformation = new THREE.Matrix4().makeRotationAxis(crossNonConserved, angle);
 
     let vectorBranch = new THREE.Vector3().subVectors(moveP1, originalP0);
     let trueNewP1 = vectorBranch.clone().applyMatrix4(matrixRotationTransformation);
@@ -109,9 +121,9 @@ TP3.Physics = {
     restitutionPoint.add(originalP0);
 
 
-    let restitution = new THREE.Vector3().subVectors(restitutionPoint, originalP1);
+    let restitution = new THREE.Vector3().subVectors(originalP1, restitutionPoint);
     let scalar = node.a0 * 1000;
-    restitution.multiplyScalar(scalar).divideScalar(dt);
+    restitution.multiplyScalar(scalar);
 
     node.vel.add(restitution);
 
@@ -119,31 +131,33 @@ TP3.Physics = {
     node.vel.multiplyScalar(0.7);
 
 
-    //On réaplique la nouvelle vélocité au résultat final 
-    //Préparer les variables pour le cacule de movement
-    movement = node.vel.clone().multiplyScalar(dt);
-    //appliquer le mouvement sans conserver la longueur de la branche
-    nonConservedP1 = new THREE.Vector3().addVectors(moveP1, movement);
+    // //On réaplique la nouvelle vélocité au résultat final 
+    // //Préparer les variables pour le cacule de movement
+    // movement = node.vel.clone().multiplyScalar(dt);
+    // //appliquer le mouvement sans conserver la longueur de la branche
+    // nonConservedP1 = new THREE.Vector3().addVectors(moveP1, movement);
 
-    // calculer l'angle causé par le mouvement
-    initialDirection = new THREE.Vector3().subVectors(moveP1, originalP0).normalize();
-    nonConservedDirection = new THREE.Vector3().subVectors(nonConservedP1, originalP0).normalize();
-    crossNonConserved = initialDirection.clone().cross(nonConservedDirection);
-    angle = initialDirection.angleTo(nonConservedDirection);
-    vectorBranch = new THREE.Vector3().subVectors(moveP1, originalP0);
+    // // calculer l'angle causé par le mouvement
+    // initialDirection = new THREE.Vector3().subVectors(moveP1, originalP0).normalize();
+    // nonConservedDirection = new THREE.Vector3().subVectors(nonConservedP1, originalP0).normalize();
+    // crossNonConserved = initialDirection.clone().cross(nonConservedDirection);
+    // angle = initialDirection.angleTo(nonConservedDirection);
+    // vectorBranch = new THREE.Vector3().subVectors(moveP1, originalP0);
 
-    quaternionRotation = new THREE.Quaternion().setFromAxisAngle(crossNonConserved, -angleSquared);
-    // let matrixRotation = new THREE.Matrix4().makeRotationFromQuaternion(quaternionRotation);
-    matrixRotationTransformation = new THREE.Matrix4().makeRotationAxis(crossNonConserved, angle)
-    trueNewP1 = vectorBranch.clone().applyMatrix4(matrixRotationTransformation);
+    // quaternionRotation = new THREE.Quaternion().setFromAxisAngle(crossNonConserved, -angleSquared);
+    // // let matrixRotation = new THREE.Matrix4().makeRotationFromQuaternion(quaternionRotation);
+    // matrixRotationTransformation = new THREE.Matrix4().makeRotationAxis(crossNonConserved, angle)
+    // trueNewP1 = vectorBranch.clone().applyMatrix4(matrixRotationTransformation);
 
-    trueNewP1.add(originalP0);
+    // trueNewP1.add(originalP0);
 
 
 
     node.matrixTransformation = matrixRotationTransformation.clone();
-    let TotalMovement = new THREE.Vector3().subVectors(trueNewP1, node.p1Initial);
-    node.vectorTransformationParenthood = new THREE.Matrix4().makeTranslation(TotalMovement.x, TotalMovement.y, TotalMovement.z);
+    // let TotalMovement = new THREE.Vector3().subVectors(trueNewP1, originalP);
+    // node.vectorTransformationParenthood =   new THREE.Matrix4().multiplyMatrices(node.nodeParent.vectorTransformationParenthood)
+
+    // new THREE.Matrix4().makeTranslation(TotalMovement.x, TotalMovement.y, TotalMovement.z);
 
 
     node.p0 = originalP0.clone();
