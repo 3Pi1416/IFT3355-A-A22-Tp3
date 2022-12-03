@@ -1,11 +1,9 @@
 TP3.Render = {
 	drawTreeRough: function (rootNode, scene, alpha, radialDivisions = 8, leavesCutoff = 0.1, leavesDensity = 10, applesProbability = 0.05, matrix = new THREE.Matrix4()) {
 
-
-
 		//créer une branche 
 		let distanceBranch = rootNode.p1.distanceTo(rootNode.p0);
-		let cylinder = new THREE.CylinderBufferGeometry(rootNode.a1, rootNode.a0, distanceBranch, 32);
+		let cylinders = new THREE.CylinderBufferGeometry(rootNode.a1, rootNode.a0, distanceBranch, 32);
 
 
 		//calculer les angles pour la rotation des branche 
@@ -35,18 +33,31 @@ TP3.Render = {
 		let test = new THREE.Matrix4().multiplyMatrices(matrixTranslationP0, matrixBasicMovement);
 
 		// matrixTransformation.multiply(matrixBasicMovement)
-		cylinder.applyMatrix4(test)
+		cylinders.applyMatrix4(test);
 
-
+		//initaliser les buffer 
+		let geometryApple = null;
+		let squares = null;
 		if (rootNode.childNode.length != 0) {
+			let isfirstChild = true
 			rootNode.childNode.forEach(child => {
-				this.drawTreeRough(child, scene, alpha, radialDivisions, leavesCutoff, leavesDensity, applesProbability, matrix);
+
+				let output = this.drawTreeRough(child, scene, alpha, radialDivisions, leavesCutoff, leavesDensity, applesProbability, matrix);
+				squares = THREE.BufferGeometryUtils.mergeBufferGeometries([cylinders, output[0]], true);
+
+				if (isfirstChild) {
+					isfirstChild = false;
+					squares = output[1];
+				} else {
+					squares = THREE.BufferGeometryUtils.mergeBufferGeometries([squares, output[1]], true);
+				}
+
 			});
 		}
 
 		let hasLeaves = rootNode.a0 < alpha * leavesCutoff;
 		if (hasLeaves) {
-			let squares = new THREE.PlaneBufferGeometry()
+
 			if (rootNode.childNode.length == 0) {
 
 				for (let i = 0; i < leavesDensity; i++) {
@@ -104,25 +115,31 @@ TP3.Render = {
 				}
 
 			}
-			//transformer les carré en feuilles 
-			let leaves = new THREE.Mesh(squares, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
-			scene.add(leaves);
+
 
 
 			let haveApple = Math.random() <= applesProbability;
 			if (haveApple) {
-
-				let geometryApple = new THREE.BoxGeometry(alpha, alpha, alpha);
-				let apple = new THREE.Mesh(geometryApple, new THREE.MeshPhongMaterial({ color: 0x5F0B0B }));
+				geometryApple = new THREE.BoxGeometry(alpha, alpha, alpha);
 				let matrixTranslationP1 = new THREE.Matrix4().makeTranslation(rootNode.p1.x, rootNode.p1.y, rootNode.p1.z);
-				apple.applyMatrix4(matrixTranslationP1);
-				scene.add(apple);
+				geometryApple.applyMatrix4(matrixTranslationP1);
+
 			}
 		}
 
-		let branches = new THREE.Mesh(cylinder, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
+		let branches = new THREE.Mesh(cylinders, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
 		scene.add(branches);
-		return
+
+		//transformer les carré en feuilles 
+		let leaves = new THREE.Mesh(squares, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
+		scene.add(leaves);
+
+		if (haveApple) {
+			let apple = new THREE.Mesh(geometryApple, new THREE.MeshPhongMaterial({ color: 0x5F0B0B }));
+			scene.add(apple);
+		}
+
+		return [cylinders, squares, geometryApple]
 	},
 
 	drawTreeHermite: function (rootNode, scene, alpha, leavesCutoff = 0.1, leavesDensity = 10, applesProbability = 0.05, matrix = new THREE.Matrix4()) {
