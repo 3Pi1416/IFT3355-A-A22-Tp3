@@ -101,10 +101,10 @@ TP3.Geometry = {
 			//information de base 
 
 
-			let degree = 2 * Math.PI / (radialDivisions + 1);
+			let degree = 2 * Math.PI / (radialDivisions);
 			let newRing = [];
 
-			for (let j = 0; j < radialDivisions + 2; j++) {
+			for (let j = 0; j < radialDivisions + 1; j++) {
 				//L'Appliquer  rotation
 				let angle = degree * j;
 				let point = new THREE.Vector3().setFromCylindricalCoords(1, angle, 1).normalize()
@@ -132,7 +132,7 @@ TP3.Geometry = {
 		}
 
 
-		rootNode.v1 = new THREE.Vector3().subVectors(rootNode.p1, rootNode.p0).normalize();
+		rootNode.v1 = new THREE.Vector3().subVectors(rootNode.p1, rootNode.p0);
 		for (let i = 1; i < lengthDivisions + 1; i++) {
 			let t = i / (lengthDivisions);
 			//information à t 
