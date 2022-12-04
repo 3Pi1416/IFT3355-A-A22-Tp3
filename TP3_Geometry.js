@@ -8,6 +8,7 @@ class Node {
 		this.p1Initial = null; //Position finale de la branche
 
 		this.p0 = null; //Position de depart de la branche
+		this.oldP0 = null;
 		this.p1 = null; //Position finale de la branche
 
 		this.a0 = null; //Rayon de la branche a p0
@@ -17,7 +18,8 @@ class Node {
 		this.v1 = null; //la tangente  point p1
 
 		this.matrixTransformation = [new THREE.Vector3(0, 0, 0), 0]; //Matrice de transformation
-		this.vectorTransformationParenthood = [new THREE.Vector3(0, 0, 0), 0];; // vector to move P1 to P1'
+		this.matrixTransformationUpdate = [new THREE.Vector3(0, 0, 0), 0];; // vector to move P1 to P1'
+
 
 		this.sections = null; //Liste contenant une liste de points representant les segments circulaires du cylindre generalise
 		this.points = null;
@@ -119,8 +121,6 @@ TP3.Geometry = {
 			//s'assurer de la taille 
 			point1.multiplyScalar(radius);
 			point2.multiplyScalar(radius);
-
-
 
 			//forcer l'orientation du  x 
 			let theta = 0;

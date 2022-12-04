@@ -54,7 +54,6 @@ TP3.Physics = {
     // Ajouter la gravite
     node.vel.add(new THREE.Vector3(0, -node.mass, 0).multiplyScalar(dt));
 
-    // node.vel.add(new THREE.Vector3(isPositive * 20 / dt, 0, 0).multiplyScalar(dt));
 
     node.isPositive = node.isPositive - 1;
     if (node.isPositive <= 0) {
@@ -64,6 +63,8 @@ TP3.Physics = {
 
 
     let parentNode = node.parentNode;
+    node.oldP0 = node.p0.clone();
+    let oldP1 = node.p1.clone();
     let originalP0 = node.p0Initial.clone();
     let originalP1 = node.p1Initial.clone();
     //propagation 
@@ -98,7 +99,13 @@ TP3.Physics = {
 
     let temps = node.p1.clone().sub(originalP0);
     [axis, angle] = TP3.Geometry.findRotation(new THREE.Vector3().subVectors(originalP1, originalP0), temps);
+    //mouvement applicable à partir de p0 initial
+    //permet de toujours avoir le vrai angle pour restitution
     node.matrixTransformation = [axis, angle];
+
+    //matrice update 
+    //le mouvment a partir de t-1
+    node.matrixTransformationUpdate = TP3.Geometry.findRotation(new THREE.Vector3().subVectors(oldP1, node.oldP0), temps);
 
     //appliquer la restition
     //trouve le vecteur temporaire 
@@ -115,6 +122,9 @@ TP3.Physics = {
 
     //mettre à jours p0 avec les information qu'on avait calculer selon les nodes parent
     node.p0 = originalP0.clone();
+
+
+
 
     // Appel recursif sur les enfants
     node.childNode.forEach(childNode => {
