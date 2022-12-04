@@ -16,8 +16,8 @@ class Node {
 		this.v0 = null; //la tangente  point p0
 		this.v1 = null; //la tangente  point p1
 
-		this.matrixTransformation = new THREE.Matrix4(); //Matrice de transformation
-		this.vectorTransformationParenthood = new THREE.Matrix4(); // vector to move P1 to P1'
+		this.matrixTransformation = [new THREE.Vector3(0, 0, 0), 0]; //Matrice de transformation
+		this.vectorTransformationParenthood = [new THREE.Vector3(0, 0, 0), 0];; // vector to move P1 to P1'
 
 		this.sections = null; //Liste contenant une liste de points representant les segments circulaires du cylindre generalise
 		this.points = null;
@@ -94,7 +94,7 @@ TP3.Geometry = {
 		let numberOfChild = rootNode.childNode.length;
 		rootNode.sections = []
 		rootNode.points = []
-		let degree = 2 * Math.PI / (radialDivisions);
+		let degree = 2 * Math.PI / (radialDivisions + 1);
 
 
 		for (let i = 0; i < lengthDivisions; i++) {
@@ -104,6 +104,9 @@ TP3.Geometry = {
 			let hermitePoint = this.hermite(rootNode.p0, rootNode.p1, rootNode.v0, rootNode.v1, t)
 			let centralPoint = hermitePoint[0];
 			let vectorTangente = hermitePoint[1].normalize();
+
+
+			//axe y et  
 
 			rootNode.points.push(centralPoint.clone())
 			let arrayPoint = []
@@ -144,7 +147,7 @@ TP3.Geometry = {
 				point2 = new THREE.Vector3(0, 0, radius);
 
 			}
-			for (let j = 0; j < radialDivisions + 1; j++) {
+			for (let j = 0; j < radialDivisions + 2; j++) {
 				//calculer la proportion des vecteur orthogonaux 
 				let a = Math.cos(theta + j * degree);
 				let b = Math.sin(theta + j * degree);
@@ -225,7 +228,7 @@ TP3.Geometry = {
 	// Trouver l'axe et l'angle de rotation entre deux vecteurs
 	findRotation: function (a, b) {
 		const axis = new THREE.Vector3().crossVectors(a, b).normalize();
-		var c = a.dot(b) / (a.length() * b.length());
+		var c = a.dot(b) / (a.length() * b.length() || 1);
 
 		if (c < -1) {
 			c = -1;
