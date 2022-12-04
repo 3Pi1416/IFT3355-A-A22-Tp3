@@ -151,18 +151,57 @@ TP3.Render = {
 
 		let number = 0;
 
-		let branches = new THREE.BufferGeometry();
+		//créer les branches enfant 
+		let apples = null;
+		let leaves = null;
+		let branches = null;
+		if (rootNode.childNode.length != 0) {
+			let isfirstChild = true
+			rootNode.childNode.forEach(child => {
+
+				child.endArrayBranches = rootNode.endArrayBranches ;
+				child.endArrayleaves = rootNode.endArrayleaves ;
+				child.endArrayApples = rootNode.endArrayApples ;
+
+				let output = this.drawTreeHermite(child, scene, alpha, leavesCutoff, leavesDensity, applesProbability, matrix);
+				rootNode.endArrayBranches = child.endArrayBranches;
+				rootNode.endArrayleaves = child.endArrayleaves;
+				rootNode.endArrayApples = child.endArrayApples;
+				//joindre les geometry
+				if (isfirstChild) {
+					isfirstChild = false;
+					branches = output[0]
+					leaves = output[1];
+					apples = output[2];
+				} else {
+					branches = THREE.BufferGeometryUtils.mergeBufferGeometries([branches, output[0]], true);
+					leaves = THREE.BufferGeometryUtils.mergeBufferGeometries([leaves, output[1]], true);
+
+					if (apples != null && output[2] != null) {
+						apples = THREE.BufferGeometryUtils.mergeBufferGeometries([apples, output[2]], true);
+					} else if (output[2] != null) {
+						apples = output[2];
+					}
+				}
+			});
+		}
+
+		if (rootNode.endArrayBranches == -1) {
+			//cas ou bout d'une branche
+			rootNode.beginningArrayBranches = rootNode.parentNode.endArrayBranches + 1;
+			rootNode.endArrayBranches = rootNode.parentNode.endArrayBranches;
+		} else {
+			// branche parrent avec enfant visités
+			rootNode.beginningArrayBranches = rootNode.endArrayBranches + 1;
+		}
 
 
+		console.log(rootNode.beginningArrayBranches)
 		//creer les branche avec des mesh
 		for (let i = 0; i < rootNode.sections.length - 1; i++) {
 			let j;
-			if (rootNode.parentNode != null) {
-				rootNode.beginningArrayBranches = rootNode.parentNode.endArrayBranches + 1;
-				rootNode.endArrayBranches = rootNode.parentNode.endArrayBranches;
-			}
 			for (j = 0; j < rootNode.sections[i].length - 1; j++) {
-				rootNode.endArrayBranches = rootNode.endArrayBranches + 2;
+				rootNode.endArrayBranches = rootNode.endArrayBranches + 6;
 				facesIdx.push(number, number + 1, number + 2, number + 3, number + 4, number + 5);
 
 				// 2 triangle a partir de 4 vertex 
@@ -178,40 +217,16 @@ TP3.Render = {
 
 		}
 
+		let newbranches = new THREE.BufferGeometry();
 		let f32vertices = new Float32Array(vertices);
-		branches.setAttribute("position", new THREE.BufferAttribute(f32vertices, 3));
-		branches.setIndex(facesIdx);
-		branches.computeVertexNormals();
-		let branchMesh = new THREE.Mesh(branches, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
-		scene.add(branchMesh);
-
-		//créer les branches enfant 
-		let apples = null;
-		let leaves = null;
-		if (rootNode.childNode.length != 0) {
-			let isfirstChild = true
-			rootNode.childNode.forEach(child => {
-
-				let output = this.drawTreeHermite(child, scene, alpha, leavesCutoff, leavesDensity, applesProbability, matrix);
-				//joindre les geometry
-				branches = THREE.BufferGeometryUtils.mergeBufferGeometries([branches, output[0]], true);
-				// joindre l'information des enfant et parents
-				if (isfirstChild) {
-					isfirstChild = false;
-					leaves = output[1];
-					apples = output[2];
-				} else {
-					leaves = THREE.BufferGeometryUtils.mergeBufferGeometries([leaves, output[1]], true);
-
-					if (apples != null && output[2] != null) {
-						apples = THREE.BufferGeometryUtils.mergeBufferGeometries([apples, output[2]], true);
-					} else if (output[2] != null) {
-						apples = output[2];
-					}
-				}
-			});
+		newbranches.setAttribute("position", new THREE.BufferAttribute(f32vertices, 3));
+		newbranches.setIndex(facesIdx);
+		newbranches.computeVertexNormals();
+		if (branches == null) {
+			branches = newbranches;
+		} else {
+			branches = THREE.BufferGeometryUtils.mergeBufferGeometries([branches, newbranches], true);
 		}
-
 
 		vertices = [];
 		facesIdx = [];
@@ -321,6 +336,7 @@ TP3.Render = {
 
 		//le tronc d'arbre termine en ajoutant sur la  scene 
 		if (rootNode.parentNode == null) {
+
 			let branchesMesh = new THREE.Mesh(branches, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
 			scene.add(branchesMesh);
 
@@ -343,51 +359,56 @@ TP3.Render = {
 					trunkGeometryBuffer[point * 3],
 					trunkGeometryBuffer[point * 3 + 1],
 					trunkGeometryBuffer[point * 3 + 2]);
-				tempVector.sub(rootNode.p0Initial).applyMatrix4(rootNode.matrixTransformation).add(rootNode.p0Initial);
+
 				if (rootNode.ParentNode != null) {
 					tempVector.applyMatrix4(rootNode.parentNode.vectorTransformationParenthood);
 				}
-
+				let parentNode = rootNode.parentNode;
+				while (parentNode != null) {
+					tempVector.sub(parentNode.p0Initial).applyAxisAngle(parentNode.matrixTransformation[0], parentNode.matrixTransformation[1]).add(parentNode.p0Initial);
+					parentNode = parentNode.parentNode;
+				}
+				tempVector.sub(rootNode.p0Initial).applyAxisAngle(rootNode.matrixTransformation[0], rootNode.matrixTransformation[1]).add(rootNode.p0Initial);
 				trunkGeometryBuffer[point * 3] = tempVector.x;
 				trunkGeometryBuffer[point * 3 + 1] = tempVector.y;
 				trunkGeometryBuffer[point * 3 + 2] = tempVector.z;
 			}
 		}
 
-		if (rootNode.endArrayleaves > -1) {
-			for (let point = rootNode.beginningArrayleaves; point <= rootNode.endArrayleaves; point++) {
-				let tempVector = new THREE.Vector3(
-					leavesGeometryBuffer[point * 3],
-					leavesGeometryBuffer[point * 3 + 1],
-					leavesGeometryBuffer[point * 3 + 2]);
-				tempVector.sub(rootNode.p0Initial).applyMatrix4(rootNode.matrixTransformation).add(rootNode.p0Initial);
-				if (rootNode.ParentNode != null) {
-					tempVector.applyMatrix4(node.parentNode.vectorTransformationParenthood);
-				}
+		// if (rootNode.endArrayleaves > -1) {
+		// 	for (let point = rootNode.beginningArrayleaves; point <= rootNode.endArrayleaves; point++) {
+		// 		let tempVector = new THREE.Vector3(
+		// 			leavesGeometryBuffer[point * 3],
+		// 			leavesGeometryBuffer[point * 3 + 1],
+		// 			leavesGeometryBuffer[point * 3 + 2]);
+		// 		// tempVector.sub(rootNode.p0Initial).applyMatrix4(rootNode.matrixTransformation).add(rootNode.p0Initial);
+		// 		if (rootNode.ParentNode != null) {
+		// 			tempVector.applyMatrix4(node.parentNode.vectorTransformationParenthood);
+		// 		}
 
-				leavesGeometryBuffer[point * 3] = tempVector.x;
-				leavesGeometryBuffer[point * 3 + 1] = tempVector.y;
-				leavesGeometryBuffer[point * 3 + 2] = tempVector.z;
-			}
+		// 		leavesGeometryBuffer[point * 3] = tempVector.x;
+		// 		leavesGeometryBuffer[point * 3 + 1] = tempVector.y;
+		// 		leavesGeometryBuffer[point * 3 + 2] = tempVector.z;
+		// 	}
 
-		}
+		// }
 
-		if (rootNode.endArrayApples > -1) {
-			for (let point = rootNode.beginningArrayApples; point <= rootNode.endArrayApples; point++) {
-				let tempVector = new THREE.Vector3(
-					applesGeometryBuffer[point * 3],
-					applesGeometryBuffer[point * 3 + 1],
-					applesGeometryBuffer[point * 3 + 2]);
-				tempVector.sub(node.p0Initial).applyMatrix4(node.matrixTransformation).add(node.p0Initial);
-				if (rootNode.ParentNode != null) {
-					tempVector.applyMatrix4(node.parentNode.vectorTransformationParenthood);
-				}
+		// if (rootNode.endArrayApples > -1) {
+		// 	for (let point = rootNode.beginningArrayApples; point <= rootNode.endArrayApples; point++) {
+		// 		let tempVector = new THREE.Vector3(
+		// 			applesGeometryBuffer[point * 3],
+		// 			applesGeometryBuffer[point * 3 + 1],
+		// 			applesGeometryBuffer[point * 3 + 2]);
+		// 		// tempVector.sub(node.p0Initial).applyMatrix4(node.matrixTransformation).add(node.p0Initial);
+		// 		if (rootNode.ParentNode != null) {
+		// 			tempVector.applyMatrix4(node.parentNode.vectorTransformationParenthood);
+		// 		}
 
-				applesGeometryBuffer[point * 3] = tempVector.x;
-				applesGeometryBuffer[point * 3 + 1] = tempVector.y;
-				applesGeometryBuffer[point * 3 + 2] = tempVector.z;
-			}
-		}
+		// 		applesGeometryBuffer[point * 3] = tempVector.x;
+		// 		applesGeometryBuffer[point * 3 + 1] = tempVector.y;
+		// 		applesGeometryBuffer[point * 3 + 2] = tempVector.z;
+		// 	}
+		// }
 
 		rootNode.childNode.forEach(child => {
 			this.updateTreeHermite(trunkGeometryBuffer, leavesGeometryBuffer, applesGeometryBuffer, child)
