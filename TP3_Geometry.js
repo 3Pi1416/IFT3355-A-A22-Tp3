@@ -105,11 +105,10 @@ TP3.Geometry = {
 			let newRing = [];
 
 			for (let j = 0; j < radialDivisions + 2; j++) {
-				let a = Math.cos(j * degree);
-				let b = Math.sin(j * degree);
+				//L'Appliquer  rotation
+				let angle = degree * j;
+				let point = new THREE.Vector3().setFromCylindricalCoords(1, angle, 1).normalize()
 
-				//L'Appliquer 
-				let point = new THREE.Vector3(point1.x * a + point2.x * b, point1.y * a + point2.y * b, point1.z * a + point2.z * b);
 				let newPoint = new THREE.Vector3().addVectors(point, rootNode.p0);
 				lastRing.push(point)
 				newRing.push(newPoint.clone().multiplyScalar(rootNode.a0))
@@ -120,6 +119,7 @@ TP3.Geometry = {
 		} else {
 
 			lastRing = [...rootNode.parentNode.lastRing];
+
 			let newRing = [];
 			lastRing.forEach(point => {
 				newRing.push(point.clone().multiplyScalar(rootNode.a0).add(rootNode.p0));
@@ -133,13 +133,13 @@ TP3.Geometry = {
 
 
 		rootNode.v1 = new THREE.Vector3().subVectors(rootNode.p1, rootNode.p0).normalize();
-		for (let i = 1; i < lengthDivisions; i++) {
-			let t = i / (lengthDivisions - 1);
+		for (let i = 1; i < lengthDivisions + 1; i++) {
+			let t = i / (lengthDivisions);
 			//information à t 
 			let radius = rootNode.a0 * (1 - t) + rootNode.a1 * t;
 			let hermitePoint = this.hermite(rootNode.p0, rootNode.p1, rootNode.v0, rootNode.v1, t)
 			let centralPoint = hermitePoint[0];
-			let vectorTangente = hermitePoint[1].normalize();
+			let vectorTangente = hermitePoint[1];
 
 			let angle;
 			let axis;
@@ -148,7 +148,7 @@ TP3.Geometry = {
 			let newRing = [];
 			//appliquer la roation autour de l'axis
 			lastRing.forEach(point => {
-				newRing.push(point.clone().applyAxisAngle(axis, angle));
+				newRing.push(point.clone().applyAxisAngle(axis, angle).normalize());
 			});
 
 			//copier le last ring qui ne sait pas encore déplacé
@@ -161,16 +161,14 @@ TP3.Geometry = {
 			});
 
 			//ajouter les information au node et préparer la prochaine itération
-			
+
 			rootNode.sections.push([...newRing]);
-			
 			rootNode.points.push(centralPoint.clone())
-			lastTangente  = vectorTangente ; 
+			lastTangente = vectorTangente;
 		}
-		rootNode.lastRing = lastRing;
+		rootNode.lastRing = [...lastRing];
 
 		let numberOfChild = rootNode.childNode.length;
-		console.log(rootNode.sections)
 		if (numberOfChild > 0) {
 			{
 				rootNode.childNode.forEach(node => {
@@ -192,6 +190,7 @@ TP3.Geometry = {
 			v1.x, v1.y, v1.z, 1
 		);
 
+
 		// Conversion d’une courbe de Hermite en courbe de Bezier (ps : facteur 1/3 à l'intérieur )
 		let matrixDeCasteljau = new THREE.Matrix4().set(
 			1, 0, 0, 0,
@@ -206,7 +205,8 @@ TP3.Geometry = {
 			new THREE.Vector3(matriceP.elements[0], matriceP.elements[4], matriceP.elements[8]),
 			new THREE.Vector3(matriceP.elements[1], matriceP.elements[5], matriceP.elements[9]),
 			new THREE.Vector3(matriceP.elements[2], matriceP.elements[6], matriceP.elements[10]),
-			new THREE.Vector3(matriceP.elements[3], matriceP.elements[7], matriceP.elements[11])]
+			new THREE.Vector3(matriceP.elements[3], matriceP.elements[7], matriceP.elements[11])];
+
 
 		//caculer bezier avec la matrice	
 		let result = this.bezier(arrayPoint, t);
@@ -220,7 +220,7 @@ TP3.Geometry = {
 		// si dernier segment on interpole et on termine
 		if (listPoint.length == 2) {
 			let newPoint = new THREE.Vector3().addVectors(new THREE.Vector3().addScaledVector(listPoint[0], (1 - t)), new THREE.Vector3().addScaledVector(listPoint[1], t));
-			let newPointTangente = new THREE.Vector3().subVectors(listPoint[0], listPoint[1]);
+			let newPointTangente = new THREE.Vector3().subVectors(listPoint[1], listPoint[0]);
 			return [newPoint, newPointTangente];
 		}
 

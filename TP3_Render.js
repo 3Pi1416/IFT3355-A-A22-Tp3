@@ -138,7 +138,7 @@ TP3.Render = {
 			branches.castShadow = true;
 			scene.add(branches);
 
-			let leaves = new THREE.Mesh(squares, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
+			let leaves = new THREE.Mesh(squares, new THREE.MeshPhongMaterial({ color: 0x3A5F0B, side: THREE.DoubleSide }));
 			leaves.castShadow = true;
 			scene.add(leaves);
 		}
@@ -364,11 +364,11 @@ TP3.Render = {
 		//le tronc d'arbre termine en ajoutant sur la  scene 
 		if (rootNode.parentNode == null) {
 
-			let branchesMesh = new THREE.Mesh(branches, new THREE.MeshLambertMaterial({ color: 0x8B5A2B }));
+			let branchesMesh = new THREE.Mesh(branches, new THREE.MeshLambertMaterial({ color: 0x8B5A2B, side: THREE.DoubleSide }));
 			branchesMesh.castShadow = true;
 			scene.add(branchesMesh);
 
-			let leavesMesh = new THREE.Mesh(leaves, new THREE.MeshPhongMaterial({ color: 0x3A5F0B }));
+			let leavesMesh = new THREE.Mesh(leaves, new THREE.MeshPhongMaterial({ color: 0x3A5F0B, side: THREE.DoubleSide }));
 			leavesMesh.castShadow = true;
 			scene.add(leavesMesh);
 
