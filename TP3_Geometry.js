@@ -20,6 +20,8 @@ class Node {
 		this.matrixTransformation = [new THREE.Vector3(0, 0, 0), 0]; //Matrice de transformation
 		this.matrixTransformationUpdate = [new THREE.Vector3(0, 0, 0), 0];; // vector to move P1 to P1'
 
+		this.lastRing = null;
+
 
 		this.sections = null; //Liste contenant une liste de points representant les segments circulaires du cylindre generalise
 		this.points = null;
@@ -84,22 +86,54 @@ TP3.Geometry = {
 
 	generateSegmentsHermite: function (rootNode, lengthDivisions = 4, radialDivisions = 8) {
 
+		let lastRing = [];
+		let lastTangente;
+		rootNode.sections = [];
+		rootNode.points = [];
+
 		if (rootNode.parentNode == null) {
 			//cas special au tronc, on suppose une ligne droite 
 			rootNode.v0 = new THREE.Vector3(0, 1, 0);
+			lastTangente = new THREE.Vector3(0, 1, 0);
+			let point1 = new THREE.Vector3(1, 0, 0);
+			let point2 = new THREE.Vector3(0, 0, -1);
+
+			//information de base 
+
+
+			let degree = 2 * Math.PI / (radialDivisions + 1);
+			let newRing = [];
+
+			for (let j = 0; j < radialDivisions + 2; j++) {
+				let a = Math.cos(j * degree);
+				let b = Math.sin(j * degree);
+
+				//L'Appliquer 
+				let point = new THREE.Vector3(point1.x * a + point2.x * b, point1.y * a + point2.y * b, point1.z * a + point2.z * b);
+				let newPoint = new THREE.Vector3().addVectors(point, rootNode.p0);
+				lastRing.push(point)
+				newRing.push(newPoint.clone().multiplyScalar(rootNode.a0))
+
+			}
+			rootNode.points.push(rootNode.p0.clone());
+			rootNode.sections.push([...newRing]);
 		} else {
-			rootNode.v0 = rootNode.parentNode.v1;
+
+			lastRing = [...rootNode.parentNode.lastRing];
+			let newRing = [];
+			lastRing.forEach(point => {
+				newRing.push(point.clone().multiplyScalar(rootNode.a0).add(rootNode.p0));
+			});
+
+			rootNode.sections.push([...newRing]);
+			rootNode.points.push(rootNode.p0.clone());
+			rootNode.v0 = rootNode.parentNode.v1.clone();
+			lastTangente = rootNode.parentNode.v1.clone();
 		}
-		rootNode.v1 = new THREE.Vector3().subVectors(rootNode.p1, rootNode.p0);
-
-		//information de base 
-		let numberOfChild = rootNode.childNode.length;
-		rootNode.sections = []
-		rootNode.points = []
-		let degree = 2 * Math.PI / (radialDivisions + 1);
 
 
-		for (let i = 0; i < lengthDivisions; i++) {
+		rootNode.v1 = new THREE.Vector3().subVectors(rootNode.p1, rootNode.p0).normalize();
+		for (let i = 1; i < lengthDivisions; i++) {
 			let t = i / (lengthDivisions - 1);
 			//information à t 
 			let radius = rootNode.a0 * (1 - t) + rootNode.a1 * t;
@@ -107,61 +141,36 @@ TP3.Geometry = {
 			let centralPoint = hermitePoint[0];
 			let vectorTangente = hermitePoint[1].normalize();
 
+			let angle;
+			let axis;
+			[axis, angle] = TP3.Geometry.findRotation(lastTangente, vectorTangente);
 
-			//axe y et  
+			let newRing = [];
+			//appliquer la roation autour de l'axis
+			lastRing.forEach(point => {
+				newRing.push(point.clone().applyAxisAngle(axis, angle));
+			});
 
+			//copier le last ring qui ne sait pas encore déplacé
+			lastRing = [...newRing];
+			newRing = [];
+
+			//ajouer la position du point central
+			lastRing.forEach(point => {
+				newRing.push(point.clone().multiplyScalar(radius).add(centralPoint));
+			});
+
+			//ajouter les information au node et préparer la prochaine itération
+			
+			rootNode.sections.push([...newRing]);
+			
 			rootNode.points.push(centralPoint.clone())
-			let arrayPoint = []
-			// calculer les 2 vecteur orthogonaux à la normal, mais de facon contrôler ( direction de base en x  > 0)
-
-			let point1 = new THREE.Vector3(vectorTangente.y, -vectorTangente.x, 0);
-			point1.normalize();
-			let point2 = new THREE.Vector3().crossVectors(point1, vectorTangente);
-			point2.normalize();
-			//s'assurer de la taille 
-			point1.multiplyScalar(radius);
-			point2.multiplyScalar(radius);
-
-			//forcer l'orientation du  x 
-			let theta = 0;
-			if (point1.x < 0) {
-				point1 = new THREE.Vector3(-point1.x, -point1.y, -point1.z);
-			}
-			if (vectorTangente.y < 0) {
-				theta = Math.PI;
-			}
-
-			// cas special avec étant sur l'Axe 
-			if (Math.abs(vectorTangente.x) > 0.999) {
-				point1 = new THREE.Vector3(0, -radius, 0);
-				point2 = new THREE.Vector3(0, 0, radius);
-
-			}
-			if (Math.abs(vectorTangente.z) > 0.999) {
-				point1 = new THREE.Vector3(radius, 0, 0);
-				point2 = new THREE.Vector3(0, -radius, 0);
-
-			}
-			if (Math.abs(vectorTangente.y) > 0.999) {
-				point1 = new THREE.Vector3(radius, 0, 0);
-				point2 = new THREE.Vector3(0, 0, radius);
-
-			}
-			for (let j = 0; j < radialDivisions + 2; j++) {
-				//calculer la proportion des vecteur orthogonaux 
-				let a = Math.cos(theta + j * degree);
-				let b = Math.sin(theta + j * degree);
-
-				//L'Appliquer 
-				let point = new THREE.Vector3(point1.x * a + point2.x * b, point1.y * a + point2.y * b, point1.z * a + point2.z * b);
-				let newPoint = new THREE.Vector3().addVectors(point, centralPoint);
-				arrayPoint.push(newPoint)
-
-			}
-			rootNode.sections.push(arrayPoint)
+			lastTangente  = vectorTangente ; 
 		}
+		rootNode.lastRing = lastRing;
 
-
+		let numberOfChild = rootNode.childNode.length;
+		console.log(rootNode.sections)
 		if (numberOfChild > 0) {
 			{
 				rootNode.childNode.forEach(node => {
@@ -169,7 +178,6 @@ TP3.Geometry = {
 				});
 			}
 		}
-
 
 		return rootNode;
 	},
