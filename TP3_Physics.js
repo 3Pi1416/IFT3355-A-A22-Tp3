@@ -90,7 +90,7 @@ TP3.Physics = {
     let angle;
     let axis;
     [axis, angle] = TP3.Geometry.findRotation(initialDirection, nonConservedDirection);
-    
+
     node.p1 = originalP1.clone().sub(originalP0).applyAxisAngle(axis, angle).add(originalP0);
 
     // Calculer la vrai vélocité causé par l'Angle
@@ -102,9 +102,9 @@ TP3.Physics = {
 
     //appliquer la restition
     //trouve le vecteur temporaire 
-    temps.applyAxisAngle(axis,- Math.pow(angle, 2));
+    temps.applyAxisAngle(axis, Math.pow(angle, 2));
 
-    let restitution = new THREE.Vector3().subVectors(temps, new THREE.Vector3().subVectors(node.p1, originalP0)).divideScalar(dt);
+    let restitution = new THREE.Vector3().subVectors(new THREE.Vector3().subVectors(node.p1, originalP0), temps).divideScalar(dt);
     let scalar = node.a0 * 1000;
     restitution.multiplyScalar(scalar);
 
