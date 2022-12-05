@@ -100,8 +100,6 @@ TP3.Geometry = {
 			let point2 = new THREE.Vector3(0, 0, -1);
 
 			//information de base 
-
-
 			let degree = 2 * Math.PI / (radialDivisions);
 			let newRing = [];
 
@@ -125,7 +123,7 @@ TP3.Geometry = {
 			lastRing.forEach(point => {
 				newRing.push(point.clone().multiplyScalar(rootNode.a0).add(rootNode.p0));
 			});
-
+			//prendre l'information du dernier point
 			rootNode.sections.push([...newRing]);
 			rootNode.points.push(rootNode.p0.clone());
 			rootNode.v0 = rootNode.parentNode.v1.clone();

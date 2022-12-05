@@ -381,7 +381,7 @@ TP3.Render = {
 	},
 
 	updateTreeHermite: function (trunkGeometryBuffer, leavesGeometryBuffer, applesGeometryBuffer, rootNode) {
-
+		//appliquer la transformation de tous selon l'index trouver précédement et la transformation qui inclue seulement le mouvement d'un point à un autre.
 		if (rootNode.endArrayBranches > -1) {
 			for (let point = rootNode.beginningArrayBranches; point <= rootNode.endArrayBranches; point++) {
 
@@ -390,11 +390,6 @@ TP3.Render = {
 					trunkGeometryBuffer[point * 3 + 1],
 					trunkGeometryBuffer[point * 3 + 2]);
 
-				let parentNode = rootNode.parentNode;
-				// while (parentNode != null) {
-				// 	tempVector.sub(parentNode.oldP0).applyAxisAngle(parentNode.matrixTransformationUpdate[0], parentNode.matrixTransformationUpdate[1]).add(parentNode.p0);
-				// 	parentNode = parentNode.parentNode;
-				// }
 				tempVector.sub(rootNode.oldP0).applyAxisAngle(rootNode.matrixTransformationUpdate[0], rootNode.matrixTransformationUpdate[1]).add(rootNode.p0);
 				trunkGeometryBuffer[point * 3] = tempVector.x;
 				trunkGeometryBuffer[point * 3 + 1] = tempVector.y;
