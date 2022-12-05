@@ -93,8 +93,9 @@ TP3.Geometry = {
 
 		if (rootNode.parentNode == null) {
 			//cas special au tronc, on suppose une ligne droite 
-			rootNode.v0 = new THREE.Vector3(0, 1, 0);
-			lastTangente = new THREE.Vector3(0, 1, 0);
+			//tangente vers le y + ( sort de la terre)
+			rootNode.v0 = new THREE.Vector3(0, 0.000001, 0);
+			lastTangente = new THREE.Vector3(0,  0.000001, 0);
 			let point1 = new THREE.Vector3(1, 0, 0);
 			let point2 = new THREE.Vector3(0, 0, -1);
 
